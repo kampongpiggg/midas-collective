@@ -1,0 +1,100 @@
+ticker,sector
+AAPL,Technology
+ABBV,Healthcare
+ABT,Healthcare
+ACN,Technology
+ADBE,Technology
+ADI,Technology
+ADP,Technology
+AMAT,Technology
+AMD,Technology
+AMGN,Healthcare
+AMZN,Consumer Cyclical
+ANET,Technology
+APH,Technology
+APP,Communication Services
+AVGO,Technology
+AXP,Financial Services
+BA,Industrials
+BAC,Financial Services
+BKNG,Consumer Cyclical
+BMY,Healthcare
+BSX,Healthcare
+C,Financial Services
+CAT,Industrials
+CB,Financial Services
+CEG,Utilities
+CMCSA,Communication Services
+COF,Financial Services
+COP,Energy
+COST,Consumer Defensive
+CRM,Technology
+CSCO,Technology
+CVS,Healthcare
+CVX,Energy
+DE,Industrials
+DHR,Healthcare
+DIS,Communication Services
+ETN,Industrials
+GE,Industrials
+GEV,Industrials
+GILD,Healthcare
+GOOGL,Communication Services
+GS,Financial Services
+HCA,Healthcare
+HD,Consumer Cyclical
+HON,Industrials
+IBM,Technology
+ICE,Financial Services
+INTC,Technology
+INTU,Technology
+JNJ,Healthcare
+JPM,Financial Services
+KLAC,Technology
+KO,Consumer Defensive
+LLY,Healthcare
+LMT,Industrials
+LOW,Consumer Cyclical
+LRCX,Technology
+MA,Financial Services
+MCD,Consumer Cyclical
+MCK,Healthcare
+MDT,Healthcare
+MMC,Financial Services
+MO,Consumer Defensive
+MRK,Healthcare
+MS,Financial Services
+MSFT,Technology
+MU,Technology
+NEE,Utilities
+NEM,Basic Materials
+NFLX,Communication Services
+NOW,Technology
+NVDA,Technology
+ORCL,Technology
+PEP,Consumer Defensive
+PFE,Healthcare
+PG,Consumer Defensive
+PGR,Financial Services
+PH,Industrials
+PM,Consumer Defensive
+QCOM,Technology
+RTX,Industrials
+SBUX,Consumer Cyclical
+SCHW,Financial Services
+SPGI,Financial Services
+SYK,Healthcare
+T,Communication Services
+TJX,Consumer Cyclical
+TMO,Healthcare
+TMUS,Communication Services
+TSLA,Consumer Cyclical
+TXN,Technology
+UBER,Technology
+UNH,Healthcare
+UNP,Industrials
+V,Financial Services
+VZ,Communication Services
+WFC,Financial Services
+WMT,Consumer Defensive
+XOM,Energy
