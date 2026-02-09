@@ -82,14 +82,26 @@ python update_data.py --full   # Annual: same + full backtest to regenerate metr
 3. **Data Freshness** — Green/yellow/red indicator based on how recently `scored_factors.csv` was updated (stale threshold: 35 days)
 4. **Backtest Summary** — Annualized return, Sharpe, max drawdown, volatility, and monthly win rate
 
-## Update Workflow
+## Monthly Update Workflow
 
-| When | Command | What it does |
-|---|---|---|
-| Monthly | `python update_data.py` | Fetches latest EDGAR fundamentals + IBKR prices, rebuilds factor table, rescores, updates picks in JSON |
-| Annually (Jan) | `python update_data.py --full` | Same as monthly + runs full historical backtest to regenerate performance metrics |
+**1. Run the update script** (requires IBKR TWS running on localhost:7496):
+```bash
+cd "Factor Investing Analysis/SPY/dashboard"
+python update_data.py
+```
+This fetches fresh EDGAR fundamentals + IBKR prices, rescores all factors, and writes the new picks into `backtest_metrics.json`.
 
-The dashboard reads only `backtest_metrics.json` (~3KB) and checks the `scored_factors.csv` timestamp for freshness. It never loads the large CSV files.
+**2. Push the updated JSON to GitHub:**
+```bash
+cd ..
+git add backtest_metrics.json
+git commit -m "Feb 2026 monthly picks"
+git push
+```
+
+Streamlit Cloud auto-redeploys when the repo updates, so the dashboard will reflect the new picks within a couple minutes.
+
+Once a year (January), run `python update_data.py --full` instead to regenerate the backtest metrics for the new universe.
 
 ## Key Configuration (config.py)
 
