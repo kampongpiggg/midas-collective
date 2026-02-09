@@ -17,7 +17,7 @@ from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STA
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="SPY Factor Dashboard",
+    page_title="The Midas Collective",
     page_icon="📈",
     layout="wide",
 )
@@ -45,7 +45,8 @@ metrics = load_metrics()
 #  Section 1 — Monthly Stock Picks (primary use case)
 # ═══════════════════════════════════════════════════════════════════════════
 
-st.title("SPY Factor Dashboard")
+st.title("The Midas Collective")
+st.caption("SPY Factor Dashboard")
 
 rebal_date = metrics.get("last_rebalance_date", "N/A")
 rebal_dt = pd.to_datetime(rebal_date)
