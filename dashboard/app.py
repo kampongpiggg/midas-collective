@@ -209,10 +209,18 @@ else:
 
 st.header("Data Freshness")
 
+# Prefer scored_factors.csv mtime if available (local), fall back to JSON rebalance date (cloud)
 mtime = get_scored_factors_mtime()
 if mtime is not None:
-    days_since = (datetime.now() - mtime).days
+    last_updated = mtime
     last_updated_str = mtime.strftime("%Y-%m-%d %H:%M")
+else:
+    rebal = metrics.get("last_rebalance_date")
+    last_updated = pd.to_datetime(rebal) if rebal else None
+    last_updated_str = rebal if rebal else "Unknown"
+
+if last_updated is not None:
+    days_since = (datetime.now() - last_updated).days
 
     if days_since < 25:
         color = "green"
@@ -243,7 +251,7 @@ if mtime is not None:
             "Run `python update_data.py` to refresh."
         )
 else:
-    st.error(f"scored_factors.csv not found at {SCORED_FACTORS_CSV}. Run `python update_data.py`.")
+    st.info("No update history available. Run `python update_data.py` to populate.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
