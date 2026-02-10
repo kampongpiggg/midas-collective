@@ -59,7 +59,7 @@ if _tape_holdings:
         "showSymbolLogo": True,
         "isTransparent": True,
         "displayMode": "adaptive",
-        "colorTheme": "light",
+        "colorTheme": "dark",
         "locale": "en",
     })
     st.components.v1.html(
@@ -106,7 +106,7 @@ if holdings:
     _widget_height = 500
 
     _econ_config = json.dumps({
-        "colorTheme": "light",
+        "colorTheme": "dark",
         "dateRange": "12M",
         "showChart": True,
         "locale": "en",
@@ -167,7 +167,7 @@ if holdings:
     })
 
     _cal_config = json.dumps({
-        "colorTheme": "light",
+        "colorTheme": "dark",
         "isTransparent": True,
         "width": "100%",
         "height": str(_widget_height - 40),
@@ -183,7 +183,7 @@ if holdings:
         "displayMode": "regular",
         "width": "100%",
         "height": str(_widget_height - 40),
-        "colorTheme": "light",
+        "colorTheme": "dark",
         "locale": "en",
     })
 
@@ -256,62 +256,71 @@ st.header("Selection Frequency Heatmap")
 
 monthly_picks = metrics.get("monthly_picks", {})
 if len(monthly_picks) >= 1:
-    # Last 6 months, chronological
-    all_months = sorted(monthly_picks.keys(), reverse=True)[:6]
-    all_months = sorted(all_months)
-    n_months = len(all_months)
+    # Last 3 months
+    recent_months = sorted(monthly_picks.keys(), reverse=True)[:3]
+    n_months = len(recent_months)
 
-    # Build presence matrix: all 100 tickers × months
-    # 1 = selected, 0 = not selected
-    matrix = pd.DataFrame(0, index=SP500_TICKERS, columns=all_months)
-    for m in all_months:
+    # Count how many times each ticker was selected
+    freq = {t: 0 for t in SP500_TICKERS}
+    for m in recent_months:
         for t in monthly_picks[m].get("tickers", []):
-            if t in matrix.index:
-                matrix.loc[t, m] = 1
+            if t in freq:
+                freq[t] += 1
 
-    # Sort by total selections (most frequent at top), then alphabetically
-    matrix["_total"] = matrix[all_months].sum(axis=1)
-    matrix = matrix.sort_values("_total", ascending=False)
-    matrix = matrix.drop(columns=["_total"])
+    # Sort: most frequently selected first, then alphabetically
+    sorted_tickers = sorted(SP500_TICKERS, key=lambda t: (-freq[t], t))
 
-    # Plotly heatmap
+    # Arrange into 10 × 10 grid
+    grid_size = 10
+    grid_z = []
+    grid_text = []
+    for r in range(grid_size):
+        row_z = []
+        row_text = []
+        for c in range(grid_size):
+            idx = r * grid_size + c
+            if idx < len(sorted_tickers):
+                ticker = sorted_tickers[idx]
+                row_z.append(freq[ticker])
+                row_text.append(ticker)
+            else:
+                row_z.append(0)
+                row_text.append("")
+        grid_z.append(row_z)
+        grid_text.append(row_text)
+
     fig = go.Figure(data=go.Heatmap(
-        z=matrix.values,
-        x=all_months,
-        y=matrix.index.tolist(),
-        colorscale=[
-            [0.0, "#f1f5f9"],   # not selected — light gray
-            [1.0, "#dc2626"],   # selected — red (high intensity)
-        ],
+        z=grid_z,
+        text=grid_text,
+        texttemplate="%{text}",
+        textfont=dict(size=11, color="white"),
+        colorscale="YlOrRd",
         zmin=0,
-        zmax=1,
-        showscale=False,
-        hovertemplate="<b>%{y}</b><br>%{x}<br>%{customdata}<extra></extra>",
-        customdata=[["Selected" if v == 1 else "Not selected" for v in row] for row in matrix.values],
-        xgap=2,
-        ygap=1,
+        zmax=n_months,
+        showscale=True,
+        colorbar=dict(
+            title="Times<br>Selected",
+            tickvals=list(range(n_months + 1)),
+        ),
+        hovertemplate="<b>%{text}</b><br>Selected %{z}/%{customdata} months<extra></extra>",
+        customdata=[[n_months] * grid_size for _ in range(grid_size)],
+        xgap=3,
+        ygap=3,
     ))
 
     fig.update_layout(
-        yaxis=dict(
-            autorange="reversed",  # most-selected tickers at top
-            dtick=1,
-            tickfont=dict(size=10),
-        ),
-        xaxis=dict(
-            side="top",
-            tickfont=dict(size=12),
-        ),
-        height=max(n_months * 50, len(matrix) * 18 + 80),
-        margin=dict(l=60, r=20, t=40, b=20),
+        xaxis=dict(showticklabels=False, showgrid=False, zeroline=False),
+        yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, autorange="reversed"),
+        height=600,
+        margin=dict(l=20, r=80, t=20, b=20),
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    months_str = ", ".join(sorted(recent_months))
     st.caption(
-        f"All {len(SP500_TICKERS)} universe stocks over the last {n_months} "
-        f"month{'s' if n_months != 1 else ''}. "
-        "Red = selected that month. Gray = not selected. "
-        "Stocks sorted by total selection frequency (most frequent at top)."
+        f"All {len(SP500_TICKERS)} universe stocks in a 10×10 grid. "
+        f"Color intensity = times selected in the last {n_months} month{'s' if n_months != 1 else ''} "
+        f"({months_str}). Sorted by frequency (most selected top-left)."
     )
 else:
     st.info("Need at least 1 month of picks data for the heatmap. Run `python update_data.py`.")
