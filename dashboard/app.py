@@ -105,65 +105,16 @@ if holdings:
     # ── Market widgets (Economics, Calendar, News) ────────────────────
     _widget_height = 500
 
-    _econ_config = json.dumps({
-        "colorTheme": "dark",
-        "dateRange": "12M",
-        "showChart": True,
+    _sgdusd_config = json.dumps({
+        "symbol": "FX_IDC:SGDUSD",
+        "width": "100%",
+        "height": str(_widget_height - 40),
         "locale": "en",
-        "largeChartUrl": "",
+        "dateRange": "12M",
+        "colorTheme": "dark",
         "isTransparent": True,
-        "showSymbolLogo": True,
-        "showFloatingTooltip": False,
-        "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
-        "plotLineColorFalling": "rgba(41, 98, 255, 1)",
-        "gridLineColor": "rgba(240, 243, 250, 0)",
-        "scaleFontColor": "rgba(19, 23, 34, 1)",
-        "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
-        "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
-        "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
-        "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
-        "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
-        "tabs": [
-            {
-                "title": "Indices",
-                "symbols": [
-                    {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
-                    {"s": "FOREXCOM:NSXUSD", "d": "US 100"},
-                    {"s": "FOREXCOM:DJI", "d": "Dow 30"},
-                    {"s": "INDEX:NKY", "d": "Nikkei 225"},
-                    {"s": "INDEX:DEU40", "d": "DAX"},
-                    {"s": "FOREXCOM:UKXGBP", "d": "FTSE 100"},
-                ],
-            },
-            {
-                "title": "Commodities",
-                "symbols": [
-                    {"s": "COMEX:GC1!", "d": "Gold"},
-                    {"s": "NYMEX:CL1!", "d": "WTI Crude"},
-                    {"s": "NYMEX:NG1!", "d": "Nat Gas"},
-                    {"s": "COMEX:SI1!", "d": "Silver"},
-                    {"s": "CBOT:ZC1!", "d": "Corn"},
-                ],
-            },
-            {
-                "title": "Bonds",
-                "symbols": [
-                    {"s": "CBOT:ZB1!", "d": "T-Bond"},
-                    {"s": "CBOT:ZN1!", "d": "10Y Note"},
-                    {"s": "CBOT:ZF1!", "d": "5Y Note"},
-                    {"s": "CBOT:ZT1!", "d": "2Y Note"},
-                ],
-            },
-            {
-                "title": "Forex",
-                "symbols": [
-                    {"s": "FX:EURUSD", "d": "EUR/USD"},
-                    {"s": "FX:GBPUSD", "d": "GBP/USD"},
-                    {"s": "FX:USDJPY", "d": "USD/JPY"},
-                    {"s": "FX_IDC:USDSGD", "d": "USD/SGD"},
-                ],
-            },
-        ],
+        "autosize": True,
+        "largeChartUrl": "",
     })
 
     _cal_config = json.dumps({
@@ -190,13 +141,13 @@ if holdings:
     w_col1, w_col2, w_col3 = st.columns(3)
 
     with w_col1:
-        st.subheader("Economics")
+        st.subheader("SGD / USD")
         st.components.v1.html(
             f"""<div class="tradingview-widget-container">
               <div class="tradingview-widget-container__widget"></div>
               <script type="text/javascript"
-                      src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js"
-                      async>{_econ_config}</script>
+                      src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
+                      async>{_sgdusd_config}</script>
             </div>""",
             height=_widget_height,
         )
@@ -294,7 +245,7 @@ if len(monthly_picks) >= 1:
         text=grid_text,
         texttemplate="%{text}",
         textfont=dict(size=11, color="white"),
-        colorscale="YlOrRd",
+        colorscale=[[0, "#000000"], [0.5, "#14532d"], [1, "#22c55e"]],
         zmin=0,
         zmax=n_months,
         showscale=True,
