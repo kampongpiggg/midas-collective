@@ -46,7 +46,31 @@ metrics = load_metrics()
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.title("The Midas Collective")
-st.caption("SPY Factor Dashboard")
+st.caption("Factor Dashboard")
+
+# ── Ticker tape of current holdings ─────────────────────────────────────
+_tape_holdings = metrics.get("current_holdings", [])
+if _tape_holdings:
+    _tape_config = json.dumps({
+        "symbols": [
+            {"proName": h["ticker"], "title": h["ticker"]}
+            for h in _tape_holdings
+        ],
+        "showSymbolLogo": True,
+        "isTransparent": True,
+        "displayMode": "adaptive",
+        "colorTheme": "light",
+        "locale": "en",
+    })
+    st.components.v1.html(
+        f"""<div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript"
+                  src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+                  async>{_tape_config}</script>
+        </div>""",
+        height=78,
+    )
 
 rebal_date = metrics.get("last_rebalance_date", "N/A")
 rebal_dt = pd.to_datetime(rebal_date)
@@ -78,39 +102,128 @@ if holdings:
         height=400,
     )
 
-    # ── TradingView mini charts ────────────────────────────────────────
-    st.subheader("Price Charts (TradingView)")
+    # ── Market widgets (Economics, Calendar, News) ────────────────────
+    _widget_height = 500
 
-    def tradingview_widget(symbol: str, width: int = 350, height: int = 220) -> str:
-        return f"""
-        <div class="tradingview-widget-container" style="height:{height}px;width:100%">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript"
-                  src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
-                  async>
-          {{
-            "symbol": "{symbol}",
-            "width": "100%",
-            "height": "{height}",
-            "locale": "en",
-            "dateRange": "1M",
-            "colorTheme": "light",
-            "isTransparent": true,
-            "autosize": true,
-            "largeChartUrl": ""
-          }}
-          </script>
-        </div>
-        """
+    _econ_config = json.dumps({
+        "colorTheme": "light",
+        "dateRange": "12M",
+        "showChart": True,
+        "locale": "en",
+        "largeChartUrl": "",
+        "isTransparent": True,
+        "showSymbolLogo": True,
+        "showFloatingTooltip": False,
+        "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+        "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+        "gridLineColor": "rgba(240, 243, 250, 0)",
+        "scaleFontColor": "rgba(19, 23, 34, 1)",
+        "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+        "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+        "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+        "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+        "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+        "tabs": [
+            {
+                "title": "Indices",
+                "symbols": [
+                    {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
+                    {"s": "FOREXCOM:NSXUSD", "d": "US 100"},
+                    {"s": "FOREXCOM:DJI", "d": "Dow 30"},
+                    {"s": "INDEX:NKY", "d": "Nikkei 225"},
+                    {"s": "INDEX:DEU40", "d": "DAX"},
+                    {"s": "FOREXCOM:UKXGBP", "d": "FTSE 100"},
+                ],
+            },
+            {
+                "title": "Commodities",
+                "symbols": [
+                    {"s": "COMEX:GC1!", "d": "Gold"},
+                    {"s": "NYMEX:CL1!", "d": "WTI Crude"},
+                    {"s": "NYMEX:NG1!", "d": "Nat Gas"},
+                    {"s": "COMEX:SI1!", "d": "Silver"},
+                    {"s": "CBOT:ZC1!", "d": "Corn"},
+                ],
+            },
+            {
+                "title": "Bonds",
+                "symbols": [
+                    {"s": "CBOT:ZB1!", "d": "T-Bond"},
+                    {"s": "CBOT:ZN1!", "d": "10Y Note"},
+                    {"s": "CBOT:ZF1!", "d": "5Y Note"},
+                    {"s": "CBOT:ZT1!", "d": "2Y Note"},
+                ],
+            },
+            {
+                "title": "Forex",
+                "symbols": [
+                    {"s": "FX:EURUSD", "d": "EUR/USD"},
+                    {"s": "FX:GBPUSD", "d": "GBP/USD"},
+                    {"s": "FX:USDJPY", "d": "USD/JPY"},
+                    {"s": "FX_IDC:USDSGD", "d": "USD/SGD"},
+                ],
+            },
+        ],
+    })
 
-    tickers = [h["ticker"] for h in holdings]
-    for row_start in range(0, len(tickers), 2):
-        cols = st.columns(2)
-        for j, col in enumerate(cols):
-            idx = row_start + j
-            if idx < len(tickers):
-                with col:
-                    st.components.v1.html(tradingview_widget(tickers[idx]), height=240)
+    _cal_config = json.dumps({
+        "colorTheme": "light",
+        "isTransparent": True,
+        "width": "100%",
+        "height": str(_widget_height - 40),
+        "locale": "en",
+        "importanceFilter": "-1,0,1",
+        "countryFilter": "us",
+    })
+
+    _news_config = json.dumps({
+        "feedMode": "market",
+        "market": "stock",
+        "isTransparent": True,
+        "displayMode": "regular",
+        "width": "100%",
+        "height": str(_widget_height - 40),
+        "colorTheme": "light",
+        "locale": "en",
+    })
+
+    w_col1, w_col2, w_col3 = st.columns(3)
+
+    with w_col1:
+        st.subheader("Economics")
+        st.components.v1.html(
+            f"""<div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript"
+                      src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js"
+                      async>{_econ_config}</script>
+            </div>""",
+            height=_widget_height,
+        )
+
+    with w_col2:
+        st.subheader("Calendar")
+        st.components.v1.html(
+            f"""<div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript"
+                      src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"
+                      async>{_cal_config}</script>
+            </div>""",
+            height=_widget_height,
+        )
+
+    with w_col3:
+        st.subheader("News")
+        st.components.v1.html(
+            f"""<div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript"
+                      src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"
+                      async>{_news_config}</script>
+            </div>""",
+            height=_widget_height,
+        )
 
     # ── Monthly picks history ──────────────────────────────────────────
     st.subheader("Monthly Picks History")

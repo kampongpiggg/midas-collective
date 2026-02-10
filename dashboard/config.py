@@ -30,7 +30,7 @@ SP500_TICKERS = sorted(set([
 # ── IBKR connection ────────────────────────────────────────────────────────
 IBKR_HOST     = "127.0.0.1"
 IBKR_PORT     = 7496
-IBKR_CLIENT_DATA     = 21   # clientId for Dataset Construction fetches
+IBKR_CLIENT_DATA     = 2    # clientId for Dataset Construction fetches
 IBKR_CLIENT_BACKTEST = 3    # clientId for Backtest fetches
 IBKR_CLIENT_VIX      = 5    # clientId for VIX fetches
 
