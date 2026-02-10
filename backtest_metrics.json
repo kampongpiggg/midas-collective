@@ -3,108 +3,134 @@
   "backtest_start": "2011-01-31",
   "backtest_end": "2026-01-09",
   "ann_return": 0.2742,
-  "sharpe": 1.20,
+  "sharpe": 1.2,
   "max_drawdown": -0.3464,
-  "ann_vol": 0.2220,
+  "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-01-09",
+  "last_rebalance_date": "2026-02-09",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
-      "weight": 0.10,
-      "alpha_score": 1.924,
-      "value_score": -0.193,
-      "quality_score": 1.307,
-      "momentum_score": 4.659
-    },
-    {
-      "ticker": "MU",
-      "sector": "Technology",
-      "weight": 0.10,
-      "alpha_score": 0.690,
-      "value_score": 0.129,
-      "quality_score": -0.884,
-      "momentum_score": 2.825
+      "weight": 0.1,
+      "alpha_score": 1.911,
+      "value_score": -0.18,
+      "quality_score": 1.344,
+      "momentum_score": 4.569
     },
     {
       "ticker": "INTC",
       "sector": "Technology",
-      "weight": 0.10,
-      "alpha_score": 0.612,
-      "value_score": 1.883,
-      "quality_score": -1.540,
-      "momentum_score": 1.491
-    },
-    {
-      "ticker": "AMAT",
-      "sector": "Technology",
-      "weight": 0.10,
-      "alpha_score": 0.552,
-      "value_score": 0.147,
-      "quality_score": 0.146,
-      "momentum_score": 1.361
-    },
-    {
-      "ticker": "V",
-      "sector": "Financial Services",
-      "weight": 0.10,
-      "alpha_score": 0.470,
-      "value_score": 0.558,
-      "quality_score": 1.055,
-      "momentum_score": -0.203
+      "weight": 0.1,
+      "alpha_score": 0.554,
+      "value_score": 2.279,
+      "quality_score": -1.327,
+      "momentum_score": 0.709
     },
     {
       "ticker": "JNJ",
       "sector": "Healthcare",
-      "weight": 0.10,
-      "alpha_score": 0.407,
-      "value_score": 0.271,
-      "quality_score": 0.968,
-      "momentum_score": -0.019
+      "weight": 0.1,
+      "alpha_score": 0.518,
+      "value_score": 0.215,
+      "quality_score": 0.974,
+      "momentum_score": 0.367
     },
     {
       "ticker": "MRK",
       "sector": "Healthcare",
-      "weight": 0.10,
-      "alpha_score": 0.403,
-      "value_score": 0.119,
-      "quality_score": 0.796,
-      "momentum_score": 0.294
+      "weight": 0.1,
+      "alpha_score": 0.461,
+      "value_score": 0.072,
+      "quality_score": 0.804,
+      "momentum_score": 0.506
     },
     {
-      "ticker": "UNP",
-      "sector": "Industrials",
-      "weight": 0.10,
-      "alpha_score": 0.370,
-      "value_score": 0.050,
-      "quality_score": 1.326,
-      "momentum_score": -0.267
+      "ticker": "GILD",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.454,
+      "value_score": 0.027,
+      "quality_score": 0.774,
+      "momentum_score": 0.561
     },
     {
       "ticker": "COP",
       "sector": "Energy",
-      "weight": 0.10,
-      "alpha_score": 0.365,
-      "value_score": 0.221,
+      "weight": 0.1,
+      "alpha_score": 0.451,
+      "value_score": 0.196,
       "quality_score": 1.123,
-      "momentum_score": -0.249
+      "momentum_score": 0.035
     },
     {
-      "ticker": "NOW",
+      "ticker": "MU",
       "sector": "Technology",
-      "weight": 0.10,
-      "alpha_score": 0.362,
-      "value_score": 1.635,
-      "quality_score": 0.116,
-      "momentum_score": -0.665
+      "weight": 0.1,
+      "alpha_score": 0.353,
+      "value_score": -0.012,
+      "quality_score": -0.895,
+      "momentum_score": 1.966
+    },
+    {
+      "ticker": "UNP",
+      "sector": "Industrials",
+      "weight": 0.1,
+      "alpha_score": 0.331,
+      "value_score": 0.035,
+      "quality_score": 1.081,
+      "momentum_score": -0.124
+    },
+    {
+      "ticker": "AMAT",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.324,
+      "value_score": -0.021,
+      "quality_score": 0.15,
+      "momentum_score": 0.842
+    },
+    {
+      "ticker": "BA",
+      "sector": "Industrials",
+      "weight": 0.1,
+      "alpha_score": 0.318,
+      "value_score": 1.221,
+      "quality_score": -0.253,
+      "momentum_score": -0.015
     }
   ],
   "monthly_picks": {
     "2026-01": {
       "date": "2026-01-09",
-      "tickers": ["NVDA", "MU", "INTC", "AMAT", "V", "JNJ", "MRK", "UNP", "COP", "NOW"]
+      "tickers": [
+        "NVDA",
+        "MU",
+        "INTC",
+        "AMAT",
+        "V",
+        "JNJ",
+        "MRK",
+        "UNP",
+        "COP",
+        "NOW"
+      ]
+    },
+    "2026-02": {
+      "date": "2026-02-09",
+      "tickers": [
+        "NVDA",
+        "INTC",
+        "JNJ",
+        "MRK",
+        "GILD",
+        "COP",
+        "MU",
+        "UNP",
+        "AMAT",
+        "BA"
+      ]
     }
   }
 }
