@@ -176,25 +176,6 @@ if holdings:
             height=_widget_height,
         )
 
-    # ── Monthly picks history ──────────────────────────────────────────
-    st.subheader("Monthly Picks History")
-
-    monthly_picks = metrics.get("monthly_picks", {})
-    if monthly_picks:
-        history_rows = []
-        for month_key in sorted(monthly_picks.keys(), reverse=True):
-            entry = monthly_picks[month_key]
-            history_rows.append({
-                "Month": month_key,
-                "Rebalance Date": entry.get("date", ""),
-                "Picks": ", ".join(entry.get("tickers", [])),
-                "Count": len(entry.get("tickers", [])),
-            })
-        history_df = pd.DataFrame(history_rows)
-        st.dataframe(history_df, use_container_width=True, hide_index=True)
-    else:
-        st.info("No monthly picks history yet. Run `python update_data.py` to populate.")
-
 else:
     st.warning("No holdings data found. Run `python update_data.py`.")
 
@@ -326,6 +307,25 @@ if last_updated is not None:
         )
 else:
     st.info("No update history available. Run `python update_data.py` to populate.")
+
+# ── Monthly picks history ──────────────────────────────────────────
+st.subheader("Monthly Picks History")
+
+monthly_picks_hist = metrics.get("monthly_picks", {})
+if monthly_picks_hist:
+    history_rows = []
+    for month_key in sorted(monthly_picks_hist.keys(), reverse=True):
+        entry = monthly_picks_hist[month_key]
+        history_rows.append({
+            "Month": month_key,
+            "Rebalance Date": entry.get("date", ""),
+            "Picks": ", ".join(entry.get("tickers", [])),
+            "Count": len(entry.get("tickers", [])),
+        })
+    history_df = pd.DataFrame(history_rows)
+    st.dataframe(history_df, use_container_width=True, hide_index=True)
+else:
+    st.info("No monthly picks history yet. Run `python update_data.py` to populate.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════

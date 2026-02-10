@@ -21,6 +21,7 @@ import pandas as pd
 import requests
 from ib_insync import IB, Stock, util
 from scipy.stats import ttest_1samp
+from tqdm import tqdm
 
 from config import (
     ALL_FUNDAMENTALS_CSV,
@@ -309,15 +310,14 @@ def fetch_all_fundamentals(
 ) -> pd.DataFrame:
     """Fetch EDGAR fundamentals for all tickers and save to CSV."""
     all_dfs = []
-    for ticker in tickers:
+    for ticker in tqdm(tickers, desc="EDGAR fundamentals", unit="ticker"):
         try:
-            print(f"  Fetching fundamentals for {ticker} ...")
             fund_df = fetch_edgar_fundamentals(ticker, user_agent=user_agent, api_key=api_key)
             fund_df = fund_df.copy()
             fund_df["ticker"] = ticker
             all_dfs.append(fund_df)
         except Exception as e:
-            print(f"  WARNING: Failed to fetch {ticker}: {e}")
+            tqdm.write(f"  WARNING: Failed to fetch {ticker}: {e}")
 
     if all_dfs:
         combined = pd.concat(all_dfs, ignore_index=True)
@@ -374,7 +374,7 @@ def fetch_ohlcv_ibkr(tickers, client_id=IBKR_CLIENT_DATA):
     ib = IB()
     ib.connect(IBKR_HOST, IBKR_PORT, clientId=client_id)
     dfs = []
-    for symbol in tickers:
+    for symbol in tqdm(tickers, desc="IBKR prices", unit="ticker"):
         contract = Stock(symbol, "SMART", "USD")
         bars = ib.reqHistoricalData(
             contract,
@@ -384,6 +384,9 @@ def fetch_ohlcv_ibkr(tickers, client_id=IBKR_CLIENT_DATA):
             whatToShow="TRADES",
             useRTH=True,
         )
+        if not bars:
+            tqdm.write(f"  WARNING: No IBKR data for {symbol}, skipping")
+            continue
         df = util.df(bars)[["date", "open", "high", "low", "close", "volume"]]
         df["ticker"] = symbol
         dfs.append(df)
@@ -544,7 +547,7 @@ def build_factor_table(raw_df, monthly_fund_df, tickers=None, report_lag_days=RE
         tickers = sorted(tickers_price & tickers_fund)
 
     all_factors = []
-    for ticker in tickers:
+    for ticker in tqdm(tickers, desc="Building factors", unit="ticker"):
         px = raw_df[raw_df["ticker"] == ticker].copy()
         if px.empty:
             continue
