@@ -8,97 +8,97 @@
   "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-02-09",
+  "last_rebalance_date": "2026-03-06",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 1.911,
-      "value_score": -0.18,
-      "quality_score": 1.344,
-      "momentum_score": 4.569
-    },
-    {
-      "ticker": "INTC",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.554,
-      "value_score": 2.279,
-      "quality_score": -1.327,
-      "momentum_score": 0.709
-    },
-    {
-      "ticker": "JNJ",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.518,
-      "value_score": 0.215,
-      "quality_score": 0.974,
-      "momentum_score": 0.367
+      "alpha_score": 1.921,
+      "value_score": -0.099,
+      "quality_score": 1.576,
+      "momentum_score": 4.285
     },
     {
       "ticker": "MRK",
       "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.461,
-      "value_score": 0.072,
-      "quality_score": 0.804,
-      "momentum_score": 0.506
+      "alpha_score": 0.6,
+      "value_score": 0.08,
+      "quality_score": 1.001,
+      "momentum_score": 0.719
+    },
+    {
+      "ticker": "JNJ",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.574,
+      "value_score": 0.241,
+      "quality_score": 0.948,
+      "momentum_score": 0.532
     },
     {
       "ticker": "GILD",
       "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.454,
-      "value_score": 0.027,
-      "quality_score": 0.774,
-      "momentum_score": 0.561
+      "alpha_score": 0.525,
+      "value_score": 0.152,
+      "quality_score": 1.046,
+      "momentum_score": 0.375
     },
     {
       "ticker": "COP",
       "sector": "Energy",
       "weight": 0.1,
-      "alpha_score": 0.451,
-      "value_score": 0.196,
-      "quality_score": 1.123,
-      "momentum_score": 0.035
-    },
-    {
-      "ticker": "MU",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.353,
-      "value_score": -0.012,
-      "quality_score": -0.895,
-      "momentum_score": 1.966
+      "alpha_score": 0.459,
+      "value_score": -0.241,
+      "quality_score": 1.016,
+      "momentum_score": 0.604
     },
     {
       "ticker": "UNP",
       "sector": "Industrials",
       "weight": 0.1,
-      "alpha_score": 0.331,
-      "value_score": 0.035,
-      "quality_score": 1.081,
-      "momentum_score": -0.124
+      "alpha_score": 0.426,
+      "value_score": 0.028,
+      "quality_score": 1.07,
+      "momentum_score": 0.181
     },
     {
-      "ticker": "AMAT",
+      "ticker": "BMY",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.421,
+      "value_score": 0.24,
+      "quality_score": 0.399,
+      "momentum_score": 0.623
+    },
+    {
+      "ticker": "INTC",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.324,
-      "value_score": -0.021,
-      "quality_score": 0.15,
-      "momentum_score": 0.842
+      "alpha_score": 0.41,
+      "value_score": 2.437,
+      "quality_score": -1.335,
+      "momentum_score": 0.128
     },
     {
       "ticker": "BA",
       "sector": "Industrials",
       "weight": 0.1,
-      "alpha_score": 0.318,
-      "value_score": 1.221,
-      "quality_score": -0.253,
-      "momentum_score": -0.015
+      "alpha_score": 0.33,
+      "value_score": 1.181,
+      "quality_score": -0.371,
+      "momentum_score": 0.181
+    },
+    {
+      "ticker": "MA",
+      "sector": "Financial Services",
+      "weight": 0.1,
+      "alpha_score": 0.292,
+      "value_score": -1.259,
+      "quality_score": 2.44,
+      "momentum_score": -0.305
     }
   ],
   "monthly_picks": {
@@ -130,6 +130,21 @@
         "UNP",
         "AMAT",
         "BA"
+      ]
+    },
+    "2026-03": {
+      "date": "2026-03-06",
+      "tickers": [
+        "NVDA",
+        "MRK",
+        "JNJ",
+        "GILD",
+        "COP",
+        "UNP",
+        "BMY",
+        "INTC",
+        "BA",
+        "MA"
       ]
     }
   }
