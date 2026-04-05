@@ -8,97 +8,97 @@
   "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-03-06",
+  "last_rebalance_date": "2026-04-02",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 1.921,
-      "value_score": -0.099,
-      "quality_score": 1.576,
-      "momentum_score": 4.285
+      "alpha_score": 2.046,
+      "value_score": -0.101,
+      "quality_score": 1.521,
+      "momentum_score": 4.718
     },
     {
-      "ticker": "MRK",
-      "sector": "Healthcare",
+      "ticker": "MU",
+      "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.6,
-      "value_score": 0.08,
-      "quality_score": 1.001,
-      "momentum_score": 0.719
-    },
-    {
-      "ticker": "JNJ",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.574,
-      "value_score": 0.241,
-      "quality_score": 0.948,
-      "momentum_score": 0.532
-    },
-    {
-      "ticker": "GILD",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.525,
-      "value_score": 0.152,
-      "quality_score": 1.046,
-      "momentum_score": 0.375
+      "alpha_score": 0.643,
+      "value_score": 0.155,
+      "quality_score": 0.37,
+      "momentum_score": 1.404
     },
     {
       "ticker": "COP",
       "sector": "Energy",
       "weight": 0.1,
-      "alpha_score": 0.459,
-      "value_score": -0.241,
+      "alpha_score": 0.607,
+      "value_score": -0.304,
       "quality_score": 1.016,
-      "momentum_score": 0.604
+      "momentum_score": 1.108
     },
     {
-      "ticker": "UNP",
-      "sector": "Industrials",
-      "weight": 0.1,
-      "alpha_score": 0.426,
-      "value_score": 0.028,
-      "quality_score": 1.07,
-      "momentum_score": 0.181
-    },
-    {
-      "ticker": "BMY",
+      "ticker": "JNJ",
       "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.421,
-      "value_score": 0.24,
-      "quality_score": 0.399,
-      "momentum_score": 0.623
+      "alpha_score": 0.52,
+      "value_score": 0.234,
+      "quality_score": 0.948,
+      "momentum_score": 0.379
     },
     {
       "ticker": "INTC",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.41,
-      "value_score": 2.437,
-      "quality_score": -1.335,
-      "momentum_score": 0.128
+      "alpha_score": 0.504,
+      "value_score": 2.229,
+      "quality_score": -1.388,
+      "momentum_score": 0.672
     },
     {
-      "ticker": "BA",
+      "ticker": "GILD",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.482,
+      "value_score": 0.162,
+      "quality_score": 1.046,
+      "momentum_score": 0.238
+    },
+    {
+      "ticker": "MRK",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.452,
+      "value_score": 0.026,
+      "quality_score": 1.001,
+      "momentum_score": 0.328
+    },
+    {
+      "ticker": "UNP",
       "sector": "Industrials",
       "weight": 0.1,
-      "alpha_score": 0.33,
-      "value_score": 1.181,
-      "quality_score": -0.371,
-      "momentum_score": 0.181
+      "alpha_score": 0.383,
+      "value_score": 0.048,
+      "quality_score": 1.07,
+      "momentum_score": 0.031
     },
     {
-      "ticker": "MA",
-      "sector": "Financial Services",
+      "ticker": "BMY",
+      "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.292,
-      "value_score": -1.259,
-      "quality_score": 2.44,
-      "momentum_score": -0.305
+      "alpha_score": 0.366,
+      "value_score": 0.249,
+      "quality_score": 0.399,
+      "momentum_score": 0.452
+    },
+    {
+      "ticker": "NOW",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.32,
+      "value_score": 1.747,
+      "quality_score": 0.211,
+      "momentum_score": -0.997
     }
   ],
   "monthly_picks": {
@@ -145,6 +145,21 @@
         "INTC",
         "BA",
         "MA"
+      ]
+    },
+    "2026-04": {
+      "date": "2026-04-02",
+      "tickers": [
+        "NVDA",
+        "MU",
+        "COP",
+        "JNJ",
+        "INTC",
+        "GILD",
+        "MRK",
+        "UNP",
+        "BMY",
+        "NOW"
       ]
     }
   }
