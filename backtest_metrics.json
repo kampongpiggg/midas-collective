@@ -8,97 +8,97 @@
   "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-04-02",
+  "last_rebalance_date": "2026-05-08",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 2.046,
-      "value_score": -0.101,
-      "quality_score": 1.521,
-      "momentum_score": 4.718
-    },
-    {
-      "ticker": "MU",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.643,
-      "value_score": 0.155,
-      "quality_score": 0.37,
-      "momentum_score": 1.404
-    },
-    {
-      "ticker": "COP",
-      "sector": "Energy",
-      "weight": 0.1,
-      "alpha_score": 0.607,
-      "value_score": -0.304,
-      "quality_score": 1.016,
-      "momentum_score": 1.108
-    },
-    {
-      "ticker": "JNJ",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.52,
-      "value_score": 0.234,
-      "quality_score": 0.948,
-      "momentum_score": 0.379
+      "alpha_score": 2.129,
+      "value_score": -0.074,
+      "quality_score": 1.658,
+      "momentum_score": 4.804
     },
     {
       "ticker": "INTC",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.504,
-      "value_score": 2.229,
-      "quality_score": -1.388,
-      "momentum_score": 0.672
+      "alpha_score": 1.088,
+      "value_score": 1.796,
+      "quality_score": -1.476,
+      "momentum_score": 2.946
     },
     {
-      "ticker": "GILD",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.482,
-      "value_score": 0.162,
-      "quality_score": 1.046,
-      "momentum_score": 0.238
-    },
-    {
-      "ticker": "MRK",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.452,
-      "value_score": 0.026,
-      "quality_score": 1.001,
-      "momentum_score": 0.328
-    },
-    {
-      "ticker": "UNP",
-      "sector": "Industrials",
-      "weight": 0.1,
-      "alpha_score": 0.383,
-      "value_score": 0.048,
-      "quality_score": 1.07,
-      "momentum_score": 0.031
-    },
-    {
-      "ticker": "BMY",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.366,
-      "value_score": 0.249,
-      "quality_score": 0.399,
-      "momentum_score": 0.452
-    },
-    {
-      "ticker": "NOW",
+      "ticker": "MU",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.32,
-      "value_score": 1.747,
-      "quality_score": 0.211,
-      "momentum_score": -0.997
+      "alpha_score": 0.767,
+      "value_score": -0.086,
+      "quality_score": 0.339,
+      "momentum_score": 2.049
+    },
+    {
+      "ticker": "CVX",
+      "sector": "Energy",
+      "weight": 0.1,
+      "alpha_score": 0.683,
+      "value_score": 0.827,
+      "quality_score": 1.158,
+      "momentum_score": 0.064
+    },
+    {
+      "ticker": "MCD",
+      "sector": "Consumer Cyclical",
+      "weight": 0.1,
+      "alpha_score": 0.673,
+      "value_score": 0.136,
+      "quality_score": 2.209,
+      "momentum_score": -0.327
+    },
+    {
+      "ticker": "MO",
+      "sector": "Consumer Defensive",
+      "weight": 0.1,
+      "alpha_score": 0.576,
+      "value_score": 0.606,
+      "quality_score": 1.0,
+      "momentum_score": 0.124
+    },
+    {
+      "ticker": "V",
+      "sector": "Financial Services",
+      "weight": 0.1,
+      "alpha_score": 0.437,
+      "value_score": 0.558,
+      "quality_score": 1.009,
+      "momentum_score": -0.257
+    },
+    {
+      "ticker": "JNJ",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.402,
+      "value_score": 0.441,
+      "quality_score": 0.845,
+      "momentum_score": -0.079
+    },
+    {
+      "ticker": "ABBV",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.402,
+      "value_score": 0.552,
+      "quality_score": 0.983,
+      "momentum_score": -0.329
+    },
+    {
+      "ticker": "CRM",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.374,
+      "value_score": 1.383,
+      "quality_score": 0.344,
+      "momentum_score": -0.605
     }
   ],
   "monthly_picks": {
@@ -160,6 +160,21 @@
         "UNP",
         "BMY",
         "NOW"
+      ]
+    },
+    "2026-05": {
+      "date": "2026-05-08",
+      "tickers": [
+        "NVDA",
+        "INTC",
+        "MU",
+        "CVX",
+        "MCD",
+        "MO",
+        "V",
+        "JNJ",
+        "ABBV",
+        "CRM"
       ]
     }
   }
