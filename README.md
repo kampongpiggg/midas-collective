@@ -189,6 +189,44 @@ Streamlit Cloud auto-redeploys when the repo updates, so the dashboard will refl
 
 Once a year (January), run `python update_data.py --full` instead to regenerate the backtest metrics for the new universe.
 
+## Equity Curve Update Workflow
+
+The equity curve tracks live portfolio performance. It requires position snapshots after each rebalance.
+
+**After each monthly rebalance, provide:**
+```
+Date: 2026-06-XX
+Cash: $XX.XX
+Holdings:
+  TICKER1: XX.XX shares
+  TICKER2: XX.XX shares
+  ...
+Capital injection (if any): $XXXX
+```
+
+**Update process:**
+1. Add new snapshot to `SNAPSHOTS` list in `dashboard/equity_curve.py`
+2. If capital was added (e.g., box spread), add to `CAPITAL_INJECTIONS` list
+3. Commit and push
+
+```python
+# Example snapshot in equity_curve.py
+{
+    "date": "2026-06-09",
+    "cash": 15.50,
+    "holdings": {
+        "AAPL": 25.5,
+        "MSFT": 18.2,
+        ...
+    },
+}
+```
+
+**Between rebalances:**
+- Equity curve auto-updates using last known positions
+- Prices fetched from Yahoo Finance
+- No manual intervention needed
+
 ## Dependencies
 
 Python 3.10+. Key packages: `streamlit`, `pandas`, `numpy`, `scipy`, `requests`, `plotly`, `ib_insync`, `nest_asyncio`, `beautifulsoup4`.
