@@ -333,27 +333,6 @@ if holdings:
         )
 
     with chart_col:
-        # Sector allocation donut chart
-        sector_counts = picks_df["sector"].value_counts()
-        fig_sector = go.Figure(data=[go.Pie(
-            labels=sector_counts.index,
-            values=sector_counts.values,
-            hole=0.5,
-            textinfo="label+value",
-            textposition="outside",
-            marker=dict(colors=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444",
-                                "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"]),
-        )])
-        fig_sector.update_layout(
-            title=dict(text="Sector Allocation", x=0.5, font=dict(size=14)),
-            showlegend=False,
-            height=200,
-            margin=dict(l=20, r=20, t=40, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white"),
-        )
-        st.plotly_chart(fig_sector, use_container_width=True)
-
         # Price chart with ticker selector
         tickers = picks_df["ticker"].tolist()
         selected_ticker = st.selectbox(
@@ -399,7 +378,7 @@ if holdings:
             )])
             fig_price.update_layout(
                 title=dict(text=title_text, x=0.5, font=dict(size=14)),
-                height=200,
+                height=350,
                 margin=dict(l=20, r=20, t=40, b=20),
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
