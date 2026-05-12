@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
 from cluster_buys import fetch_cluster_buys
 from market_sentiment import fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color
-from equity_curve import generate_equity_curve
+from equity_curve import generate_equity_curve, fetch_daily_prices
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -293,7 +293,7 @@ if holdings:
     display_cols = ["ticker", "sector", "alpha_score",
                     "value_score", "quality_score", "momentum_score"]
 
-    # Configure columns with centered alignment and formatting
+    # Configure columns with formatting
     column_config = {
         "ticker": st.column_config.TextColumn("Ticker", width="small"),
         "sector": st.column_config.TextColumn("Sector", width="medium"),
@@ -321,15 +321,96 @@ if holdings:
         ),
     }
 
-    # Center the table using columns
-    _, center_col, _ = st.columns([1, 3, 1])
-    with center_col:
+    # Two-column layout: table on left, charts on right
+    table_col, chart_col = st.columns([1, 1])
+
+    with table_col:
         st.dataframe(
             picks_df[display_cols],
             column_config=column_config,
             use_container_width=True,
             hide_index=False,
         )
+
+    with chart_col:
+        # Sector allocation donut chart
+        sector_counts = picks_df["sector"].value_counts()
+        fig_sector = go.Figure(data=[go.Pie(
+            labels=sector_counts.index,
+            values=sector_counts.values,
+            hole=0.5,
+            textinfo="label+value",
+            textposition="outside",
+            marker=dict(colors=["#3b82f6", "#22c55e", "#f59e0b", "#ef4444",
+                                "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"]),
+        )])
+        fig_sector.update_layout(
+            title=dict(text="Sector Allocation", x=0.5, font=dict(size=14)),
+            showlegend=False,
+            height=200,
+            margin=dict(l=20, r=20, t=40, b=20),
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="white"),
+        )
+        st.plotly_chart(fig_sector, use_container_width=True)
+
+        # Price chart with ticker selector
+        tickers = picks_df["ticker"].tolist()
+        selected_ticker = st.selectbox(
+            "Select stock to view price history",
+            tickers,
+            key="ticker_select",
+            label_visibility="collapsed",
+        )
+
+        # Fetch 6-month price data
+        @st.cache_data(ttl=3600)
+        def get_price_history(ticker: str) -> dict:
+            from datetime import timedelta
+            end = datetime.now()
+            start = end - timedelta(days=180)
+            return fetch_daily_prices(ticker, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+
+        prices = get_price_history(selected_ticker)
+        if prices:
+            dates = sorted(prices.keys())
+            values = [prices[d] for d in dates]
+
+            # Calculate return
+            if len(values) >= 2:
+                pct_change = ((values[-1] - values[0]) / values[0]) * 100
+                color = "#22c55e" if pct_change >= 0 else "#ef4444"
+                title_text = f"{selected_ticker}: {pct_change:+.1f}% (6M)"
+            else:
+                color = "#3b82f6"
+                title_text = selected_ticker
+
+            # Parse hex color to rgba
+            hex_color = color.lstrip("#")
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+
+            fig_price = go.Figure(data=[go.Scatter(
+                x=dates,
+                y=values,
+                mode="lines",
+                line=dict(color=color, width=2),
+                fill="tozeroy",
+                fillcolor=f"rgba({r},{g},{b},0.1)",
+            )])
+            fig_price.update_layout(
+                title=dict(text=title_text, x=0.5, font=dict(size=14)),
+                height=200,
+                margin=dict(l=20, r=20, t=40, b=20),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.1)", tickformat="$.0f"),
+            )
+            st.plotly_chart(fig_price, use_container_width=True)
+        else:
+            st.info(f"No price data for {selected_ticker}")
+
 else:
     st.warning("No holdings data found. Run `python update_data.py`.")
 
