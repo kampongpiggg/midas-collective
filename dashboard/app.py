@@ -199,7 +199,7 @@ else:
 st.header("Insider Cluster Buys")
 st.caption("3+ officers/directors buying $200k+ in the last 30 days (via OpenInsider)")
 
-if cluster_buys:
+if cluster_buys and len(cluster_buys) > 0 and "value" in cluster_buys[0]:
     cluster_df = pd.DataFrame(cluster_buys)
     cluster_df.index = range(1, len(cluster_df) + 1)
     cluster_df.index.name = "#"
@@ -226,8 +226,12 @@ if cluster_buys:
         use_container_width=True,
         height=min(400, 50 + len(cluster_df) * 35),
     )
+elif cluster_buys:
+    # Data returned but unexpected format
+    st.warning("Cluster buys data format unexpected. Check OpenInsider connection.")
+    st.json(cluster_buys[:2] if len(cluster_buys) > 2 else cluster_buys)
 else:
-    st.info("No cluster buys found matching criteria (3+ insiders, $200k+ total).")
+    st.info("No cluster buys found. OpenInsider may be temporarily unavailable.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
