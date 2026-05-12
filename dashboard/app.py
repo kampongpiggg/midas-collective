@@ -147,11 +147,14 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
             alpha_pvalue = ec.get("alpha_pvalue")
             st.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
             if alpha_pvalue is not None:
-                if alpha_pvalue < 0.05:
-                    sig_text = f"<span style='color:#22c55e'>Significant (p={alpha_pvalue:.2f})</span>"
+                prob_outperform = (1 - alpha_pvalue) * 100
+                if prob_outperform >= 95:
+                    color = "#22c55e"
+                elif prob_outperform >= 75:
+                    color = "#888"
                 else:
-                    sig_text = f"<span style='color:#888'>Not significant (p={alpha_pvalue:.2f})</span>"
-                st.markdown(f"<span style='font-size:0.75rem;'>{sig_text}</span>", unsafe_allow_html=True)
+                    color = "#f97316"
+                st.markdown(f"<span style='font-size:0.75rem; color:{color};'>{prob_outperform:.0f}% probability of outperformance</span>", unsafe_allow_html=True)
 
     with right_col:
         # Strategy Health Badge
