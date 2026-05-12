@@ -129,51 +129,61 @@ st.subheader("Current Performance")
 if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
     ec = equity_curve
 
-    # Main metrics row
-    ec1, ec2 = st.columns(2)
+    # Layout: metrics on left (2 cols), strategy health badge on right (1 col)
+    left_col, right_col = st.columns([2, 1])
 
-    with ec1:
-        st.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
-        # Monitoring stats below
+    with left_col:
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
+        with m2:
+            port_ret = ec.get("returns", 0)
+            spy_ret = ec.get("spy_returns", 0)
+            st.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
+
+    with right_col:
+        # Strategy Health Badge
+        z_score = ec.get("z_score", 0)
         drawdown = ec.get("current_drawdown", 0)
-        dd_color = "#22c55e" if drawdown > -10 else "#f97316" if drawdown > -25 else "#dc2626"
         rolling_sharpe = ec.get("rolling_sharpe")
-        sharpe_str = f"{rolling_sharpe:.2f}" if rolling_sharpe is not None else "N/A"
-        sharpe_color = "#22c55e" if rolling_sharpe and rolling_sharpe > 0.8 else "#f97316" if rolling_sharpe and rolling_sharpe > 0.3 else "#dc2626"
-        st.markdown(
-            f"<span style='font-size:0.85rem;color:gray'>Drawdown: </span>"
-            f"<span style='font-size:0.85rem;color:{dd_color}'>{drawdown:+.1f}%</span>"
-            f"<span style='font-size:0.85rem;color:gray'> · Sharpe: </span>"
-            f"<span style='font-size:0.85rem;color:{sharpe_color}'>{sharpe_str}</span>",
-            unsafe_allow_html=True,
-        )
-
-    with ec2:
-        port_ret = ec.get("returns", 0)
-        spy_ret = ec.get("spy_returns", 0)
-        st.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
-        # Win rate and thesis health
         win_count = ec.get("win_count", 0)
         total_months = ec.get("total_months", 0)
-        win_rate = ec.get("win_rate")
-        z_score = ec.get("z_score", 0)
+        win_pvalue = ec.get("win_pvalue")
+        realized_vol = ec.get("realized_vol")
+        vol_pvalue = ec.get("vol_pvalue")
+        expected_vol = ec.get("expected_vol", 22.2)
+        expected_sharpe = ec.get("expected_sharpe", 1.20)
+        expected_max_dd = ec.get("expected_max_dd", -34.6)
 
-        win_str = f"{win_count}/{total_months}" if total_months else "N/A"
-        win_color = "#22c55e" if win_rate and win_rate >= 60 else "#f97316" if win_rate and win_rate >= 40 else "#dc2626"
-
-        # Z-score interpretation: < -2 is concerning
+        # Overall status based on z-score
         if z_score >= -1:
-            z_status, z_color = "On Track", "#22c55e"
+            status, status_color = "On Track", "#22c55e"
         elif z_score >= -2:
-            z_status, z_color = "Monitor", "#f97316"
+            status, status_color = "Monitor", "#f97316"
         else:
-            z_status, z_color = "Review Thesis", "#dc2626"
+            status, status_color = "Review", "#dc2626"
+
+        # Build metrics display
+        sharpe_str = f"{rolling_sharpe:.2f}" if rolling_sharpe else "N/A"
+        vol_str = f"{realized_vol:.0f}%" if realized_vol else "N/A"
+        win_str = f"{win_count}/{total_months}"
+        win_p_str = f"p={win_pvalue:.2f}" if win_pvalue is not None else ""
+        vol_p_str = f"p={vol_pvalue:.2f}" if vol_pvalue is not None else ""
 
         st.markdown(
-            f"<span style='font-size:0.85rem;color:gray'>Win Rate: </span>"
-            f"<span style='font-size:0.85rem;color:{win_color}'>{win_str}</span>"
-            f"<span style='font-size:0.85rem;color:gray'> · Thesis: </span>"
-            f"<span style='font-size:0.85rem;color:{z_color}'>{z_status} (z={z_score:+.1f})</span>",
+            f"""<div style='background:linear-gradient(135deg, {status_color}22, {status_color}11);
+                border:1px solid {status_color}44; border-radius:12px; padding:16px; text-align:center;'>
+                <div style='font-size:1.4rem; font-weight:bold; color:{status_color}; margin-bottom:8px;'>
+                    {status}
+                </div>
+                <div style='font-size:0.8rem; color:#aaa; line-height:1.6;'>
+                    <b>Returns:</b> z={z_score:+.1f}<br>
+                    <b>Sharpe:</b> {sharpe_str} (exp {expected_sharpe})<br>
+                    <b>Volatility:</b> {vol_str} (exp {expected_vol:.0f}%) {vol_p_str}<br>
+                    <b>Win Rate:</b> {win_str} {win_p_str}<br>
+                    <b>Drawdown:</b> {drawdown:.1f}% (max {expected_max_dd}%)
+                </div>
+            </div>""",
             unsafe_allow_html=True,
         )
 
@@ -248,12 +258,11 @@ if holdings:
     picks_df.index = range(1, len(picks_df) + 1)
     picks_df.index.name = "#"
 
-    display_cols = ["ticker", "sector", "weight", "alpha_score",
+    display_cols = ["ticker", "sector", "alpha_score",
                     "value_score", "quality_score", "momentum_score"]
     col_labels = {
         "ticker": "Ticker",
         "sector": "Sector",
-        "weight": "Weight",
         "alpha_score": "Alpha",
         "value_score": "Value",
         "quality_score": "Quality",

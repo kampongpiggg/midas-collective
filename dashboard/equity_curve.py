@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import json
 import statistics
 import math
+from scipy import stats
 
 
 # Portfolio snapshots from user's trade history
@@ -282,24 +283,31 @@ def generate_equity_curve() -> dict:
     else:
         rolling_sharpe = None
 
-    # Win rate
+    # Backtest expectations
+    EXPECTED_WIN_RATE = 0.706  # 70.6%
+    EXPECTED_MONTHLY_RETURN = 2.28  # 27.4% / 12
+    EXPECTED_MONTHLY_STD = 6.41  # 22.2% / sqrt(12)
+    EXPECTED_ANNUAL_VOL = 22.2
+    EXPECTED_SHARPE = 1.20
+    EXPECTED_MAX_DD = -34.6
+
+    # Win rate + binomial test
     if monthly_returns:
         wins = sum(1 for r in monthly_returns if r > 0)
         win_rate = wins / len(monthly_returns) * 100
         win_count = wins
         total_months = len(monthly_returns)
+        # Binomial test: P(observing <= wins | n, p=0.706)
+        # Low p-value means significantly underperforming
+        win_pvalue = stats.binom.cdf(wins, total_months, EXPECTED_WIN_RATE)
     else:
         win_rate = None
         win_count = 0
         total_months = 0
+        win_pvalue = None
 
-    # Thesis health check: Z-score vs expected returns
-    # Backtest: 27.4% annual = 2.28% monthly, 22.2% annual vol = 6.41% monthly std
-    EXPECTED_MONTHLY_RETURN = 2.28
-    EXPECTED_MONTHLY_STD = 6.41
-
+    # Returns z-score
     if monthly_returns:
-        # Calculate cumulative return z-score
         n_months = len(monthly_returns)
         expected_cum_return = EXPECTED_MONTHLY_RETURN * n_months
         expected_cum_std = EXPECTED_MONTHLY_STD * math.sqrt(n_months)
@@ -308,8 +316,24 @@ def generate_equity_curve() -> dict:
     else:
         z_score = 0
         n_months = 0
-        expected_cum_return = 0
-        actual_cum_return = 0
+
+    # Realized volatility + chi-squared test
+    if len(monthly_returns) >= 2:
+        realized_monthly_std = statistics.stdev(monthly_returns)
+        realized_annual_vol = realized_monthly_std * math.sqrt(12)
+        # Chi-squared test on variance
+        # H0: variance = expected variance
+        expected_monthly_var = EXPECTED_MONTHLY_STD ** 2
+        sample_var = realized_monthly_std ** 2
+        chi2_stat = (n_months - 1) * sample_var / expected_monthly_var
+        # Two-tailed p-value
+        vol_pvalue = 2 * min(
+            stats.chi2.cdf(chi2_stat, n_months - 1),
+            1 - stats.chi2.cdf(chi2_stat, n_months - 1)
+        )
+    else:
+        realized_annual_vol = None
+        vol_pvalue = None
 
     return {
         "dates": all_dates,
@@ -326,8 +350,15 @@ def generate_equity_curve() -> dict:
         "win_rate": round(win_rate, 1) if win_rate is not None else None,
         "win_count": win_count,
         "total_months": total_months,
+        "win_pvalue": round(win_pvalue, 3) if win_pvalue is not None else None,
         "z_score": round(z_score, 2),
+        "realized_vol": round(realized_annual_vol, 1) if realized_annual_vol is not None else None,
+        "vol_pvalue": round(vol_pvalue, 3) if vol_pvalue is not None else None,
         "monthly_returns": [round(r, 2) for r in monthly_returns],
+        # Expected values for comparison
+        "expected_sharpe": EXPECTED_SHARPE,
+        "expected_vol": EXPECTED_ANNUAL_VOL,
+        "expected_max_dd": EXPECTED_MAX_DD,
     }
 
 
