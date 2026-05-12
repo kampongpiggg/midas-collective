@@ -168,6 +168,8 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
 
         if z_score < -2:
             status, status_color = "Review Thesis", "#000000"
+        elif drawdown < expected_max_dd:
+            status, status_color = "Max Drawdown Breached", "#dc2626"
         elif z_score < -1 and z_score >= -2 and (win_sig_low or drawdown < -25):
             status, status_color = "Underperforming Backtest", "#dc2626"
         elif vol_sig_high and sharpe_low:
