@@ -11,28 +11,36 @@ from bs4 import BeautifulSoup
 
 
 def fetch_cluster_buys(
-    min_value: int = 200_000,
+    min_value_k: int = 200,
     min_insiders: int = 3,
     days_back: int = 30,
 ) -> list[dict]:
     """
     Scrape cluster buys from openinsider.com.
 
-    Cluster buys = multiple insiders buying around the same time.
-    Filters for officers/directors with total value >= min_value in last N days.
+    Uses OpenInsider's grouped screener with filters:
+    - Officers, directors, C-suite only (no 10% owners)
+    - Purchases only (no grants/awards)
+    - Grouped by ticker (grp=2)
+    - Min 3 insiders (nil=3)
+    - Min $200k total value (vl=200)
 
     Returns list of dicts with keys:
-        ticker, company, industry, insider_count, total_value,
-        latest_filing, avg_price, titles
+        ticker, company, industry, insider_count, trade_date,
+        filing_date, price, qty, value
     """
-    # OpenInsider screener URL for cluster buys (grouped by ticker)
+    # OpenInsider screener with proper filters for cluster buys
+    # grp=2 = group by ticker, nil=3 = min 3 insiders, vl=200 = min $200k value
+    # isofficer, iscob, isceo, etc. = officer/director filters
+    # xp=1 = exclude private, ocl=1 = min 1% ownership change
     url = (
-        "http://openinsider.com/screener?"
-        f"s=&o=&pl={min_value // 1000}&ph=&ll=&lh=&fd={days_back}&fdr=&td=&tdr="
-        "&fdlyl=&fdlyh=&dtefyl=&dtefyh="
-        "&xa=1&xp=1&xd=1&xo=1"
-        "&vl=&vh=&ocl=&och=&session=&type=&filter=cluster"
-        "&sort=fd&sortdesc=1"
+        f"http://openinsider.com/screener?s=&o=&pl=3&ph=&ll=&lh="
+        f"&fd={days_back}&fdr=&td=0&tdr=&fdlyl=&fdlyh=6&daysago="
+        f"&xp=1&vl={min_value_k}&vh=&ocl=1&och="
+        f"&sic1=-1&sicl=100&sich=9999"
+        f"&isofficer=1&iscob=1&isceo=1&ispres=1&iscoo=1&iscfo=1&isgc=1&isvp=1&isdirector=1"
+        f"&grp=2&nfl=&nfh=&nil={min_insiders}&nih=&nol=0&noh="
+        f"&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1"
     )
 
     headers = {
@@ -68,9 +76,8 @@ def fetch_cluster_buys(
 
     # Parse header row to find column indices
     header_row = rows[0]
-    headers_text = [th.get_text(strip=True).lower() for th in header_row.find_all(["th", "td"])]
+    headers_text = [th.get_text(strip=True).lower().replace("\xa0", " ") for th in header_row.find_all(["th", "td"])]
 
-    # Column mapping (openinsider uses various column names)
     def find_col(names: list[str]) -> int:
         for name in names:
             for i, h in enumerate(headers_text):
@@ -78,16 +85,17 @@ def fetch_cluster_buys(
                     return i
         return -1
 
-    col_ticker = find_col(["ticker", "symbol"])
-    col_company = find_col(["company", "name"])
-    col_industry = find_col(["industry", "sector"])
-    col_filing = find_col(["filing", "filed"])
-    col_title = find_col(["title"])
+    col_filing = find_col(["filing"])
+    col_trade = find_col(["trade date", "trade"])
+    col_ticker = find_col(["ticker"])
+    col_company = find_col(["company"])
+    col_industry = find_col(["industry"])
+    col_insiders = find_col(["ins"])
     col_price = find_col(["price"])
+    col_qty = find_col(["qty"])
     col_value = find_col(["value"])
 
-    # Aggregate by ticker for cluster detection
-    ticker_data: dict[str, dict] = {}
+    cluster_buys = []
 
     for row in rows[1:]:
         cells = row.find_all("td")
@@ -106,66 +114,53 @@ def fetch_cluster_buys(
         company = get_cell(col_company)
         industry = get_cell(col_industry) if col_industry >= 0 else ""
         filing_date = get_cell(col_filing)
-        title = get_cell(col_title) if col_title >= 0 else ""
-        price_str = get_cell(col_price) if col_price >= 0 else ""
-        value_str = get_cell(col_value) if col_value >= 0 else ""
+        trade_date = get_cell(col_trade) if col_trade >= 0 else ""
 
-        # Parse value (e.g., "$1,234,567" or "+$500,000")
-        value_clean = re.sub(r"[^\d.]", "", value_str)
+        # Parse insider count
+        ins_str = get_cell(col_insiders) if col_insiders >= 0 else "0"
         try:
-            value = float(value_clean) if value_clean else 0
+            insider_count = int(ins_str)
         except ValueError:
-            value = 0
+            insider_count = 0
 
         # Parse price
+        price_str = get_cell(col_price) if col_price >= 0 else ""
         price_clean = re.sub(r"[^\d.]", "", price_str)
         try:
             price = float(price_clean) if price_clean else 0
         except ValueError:
             price = 0
 
-        # Aggregate by ticker
-        if ticker not in ticker_data:
-            ticker_data[ticker] = {
-                "ticker": ticker,
-                "company": company,
-                "industry": industry,
-                "insider_count": 0,
-                "total_value": 0,
-                "latest_filing": filing_date,
-                "prices": [],
-                "titles": set(),
-            }
+        # Parse quantity
+        qty_str = get_cell(col_qty) if col_qty >= 0 else ""
+        qty_clean = re.sub(r"[^\d]", "", qty_str)
+        try:
+            qty = int(qty_clean) if qty_clean else 0
+        except ValueError:
+            qty = 0
 
-        ticker_data[ticker]["insider_count"] += 1
-        ticker_data[ticker]["total_value"] += value
-        if price > 0:
-            ticker_data[ticker]["prices"].append(price)
-        if title:
-            ticker_data[ticker]["titles"].add(title)
+        # Parse value
+        value_str = get_cell(col_value) if col_value >= 0 else ""
+        value_clean = re.sub(r"[^\d]", "", value_str)
+        try:
+            value = int(value_clean) if value_clean else 0
+        except ValueError:
+            value = 0
 
-        # Update latest filing if newer
-        if filing_date > ticker_data[ticker]["latest_filing"]:
-            ticker_data[ticker]["latest_filing"] = filing_date
+        cluster_buys.append({
+            "ticker": ticker,
+            "company": company,
+            "industry": industry,
+            "insider_count": insider_count,
+            "trade_date": trade_date,
+            "filing_date": filing_date,
+            "price": round(price, 2),
+            "qty": qty,
+            "value": value,
+        })
 
-    # Filter for actual clusters (min_insiders+) and min value
-    cluster_buys = []
-    for data in ticker_data.values():
-        if data["insider_count"] >= min_insiders and data["total_value"] >= min_value:
-            avg_price = sum(data["prices"]) / len(data["prices"]) if data["prices"] else 0
-            cluster_buys.append({
-                "ticker": data["ticker"],
-                "company": data["company"],
-                "industry": data["industry"],
-                "insider_count": data["insider_count"],
-                "total_value": int(data["total_value"]),
-                "latest_filing": data["latest_filing"],
-                "avg_price": round(avg_price, 2),
-                "titles": ", ".join(sorted(data["titles"])),
-            })
+    # Sort by value descending
+    cluster_buys.sort(key=lambda x: x["value"], reverse=True)
 
-    # Sort by total value descending
-    cluster_buys.sort(key=lambda x: x["total_value"], reverse=True)
-
-    print(f"  Found {len(cluster_buys)} cluster buys ({min_insiders}+ insiders, >=${min_value:,})")
+    print(f"  Found {len(cluster_buys)} cluster buys ({min_insiders}+ insiders, >=${min_value_k}k)")
     return cluster_buys

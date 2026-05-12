@@ -204,32 +204,28 @@ if cluster_buys:
     cluster_df.index = range(1, len(cluster_df) + 1)
     cluster_df.index.name = "#"
 
-    # Format total_value as currency
-    cluster_df["total_value"] = cluster_df["total_value"].apply(lambda x: f"${x:,.0f}")
-    cluster_df["avg_price"] = cluster_df["avg_price"].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
+    # Format currency columns
+    cluster_df["value_fmt"] = cluster_df["value"].apply(lambda x: f"${x:,.0f}")
+    cluster_df["price_fmt"] = cluster_df["price"].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
+    cluster_df["qty_fmt"] = cluster_df["qty"].apply(lambda x: f"{x:,}")
 
     col_labels = {
         "ticker": "Ticker",
         "company": "Company",
         "industry": "Industry",
-        "insider_count": "# Insiders",
-        "total_value": "Total Value",
-        "latest_filing": "Latest Filing",
-        "avg_price": "Avg Price",
-        "titles": "Titles",
+        "insider_count": "Insiders",
+        "trade_date": "Trade Date",
+        "price_fmt": "Price",
+        "qty_fmt": "Shares",
+        "value_fmt": "Value",
     }
 
-    display_cols = ["ticker", "company", "insider_count", "total_value", "avg_price", "latest_filing"]
+    display_cols = ["ticker", "company", "insider_count", "trade_date", "price_fmt", "qty_fmt", "value_fmt"]
     st.dataframe(
         cluster_df[display_cols].rename(columns=col_labels),
         use_container_width=True,
         height=min(400, 50 + len(cluster_df) * 35),
     )
-
-    # Expandable details
-    with st.expander("Show insider titles"):
-        for _, row in cluster_df.iterrows():
-            st.markdown(f"**{row['ticker']}**: {row['titles']}")
 else:
     st.info("No cluster buys found matching criteria (3+ insiders, $200k+ total).")
 
