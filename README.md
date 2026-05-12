@@ -42,9 +42,12 @@ A quantitative, factor-based stock selection strategy applied to 100 large-cap S
 ```
 SPY/
 ├── dashboard/
-│   ├── app.py                  # Streamlit dashboard (reads backtest_metrics.json only)
+│   ├── app.py                  # Streamlit dashboard
 │   ├── update_data.py          # CLI script to refresh data + picks monthly
 │   ├── config.py               # Shared constants (paths, tickers, API keys, params)
+│   ├── equity_curve.py         # Live portfolio tracking from trade snapshots
+│   ├── cluster_buys.py         # OpenInsider scraper for insider cluster buys
+│   ├── market_sentiment.py     # VIX and Fear & Greed Index fetchers
 │   └── requirements.txt        # Python dependencies
 ├── backtest_metrics.json       # Dashboard data: metrics, current holdings, monthly picks
 ├── scored_factors.csv          # Full scored factor table (~181MB, not read by dashboard)
@@ -77,10 +80,11 @@ python update_data.py --full   # Annual: same + full backtest to regenerate metr
 
 ## Dashboard Sections
 
-1. **Monthly Stock Picks** — Current top-decile portfolio with scores, embedded TradingView price charts, and monthly picks history
-2. **Selection Frequency Heatmap** — Plotly heatmap showing which of the 100 stocks were selected each month over the last 6 months (red = selected, gray = not)
-3. **Data Freshness** — Green/yellow/red indicator based on how recently `scored_factors.csv` was updated (stale threshold: 35 days)
-4. **Backtest Summary** — Annualized return, Sharpe, max drawdown, volatility, and monthly win rate
+1. **Portfolio Performance** — Tracks live portfolio returns with an equity curve vs SPY benchmark, plus expected performance metrics from the backtest (annualized return, Sharpe, max drawdown, volatility, monthly win rate)
+2. **Current Picks** — Top-decile portfolio for the month with factor scores (Alpha, Value, Quality, Momentum)
+3. **Market Pulse** — Supplementary market context: SGD/USD rate, economic calendar, news feed, VIX level, CNN Fear & Greed Index, and insider cluster buys from OpenInsider
+4. **Sector Rotation Heatmap** — Visualizes how sector allocation has shifted over the last 6 months
+5. **Data Freshness** — Green/yellow/red indicator based on how recently data was updated (stale threshold: 35 days)
 
 ## Monthly Update Workflow
 
@@ -115,4 +119,4 @@ Once a year (January), run `python update_data.py --full` instead to regenerate 
 
 ## Dependencies
 
-Python 3.10+. Key packages: `streamlit`, `pandas`, `numpy`, `scipy`, `requests`, `plotly`, `ib_insync`, `nest_asyncio`.
+Python 3.10+. Key packages: `streamlit`, `pandas`, `numpy`, `scipy`, `requests`, `plotly`, `ib_insync`, `nest_asyncio`, `beautifulsoup4`.
