@@ -86,6 +86,88 @@ python update_data.py --full   # Annual: same + full backtest to regenerate metr
 4. **Sector Rotation Heatmap** — Visualizes how sector allocation has shifted over the last 6 months
 5. **Data Freshness** — Green/yellow/red indicator based on how recently data was updated (stale threshold: 35 days)
 
+## Strategy Health Monitoring
+
+The dashboard includes a **Strategy Health Badge** that runs statistical tests to determine if the live portfolio is performing as expected compared to the backtest.
+
+### Metrics Displayed
+
+| Metric | Description |
+|--------|-------------|
+| **Returns (z)** | Z-score of cumulative returns vs backtest expectations |
+| **Vol** | Realized annualized volatility |
+| **Win** | Monthly win rate (positive return months / total months) |
+| **Sharpe** | Rolling Sharpe ratio |
+| **DD** | Current drawdown from peak |
+
+### Statistical Tests
+
+**1. Returns Z-Score**
+
+Measures how many standard deviations the cumulative return is from the expected value.
+
+```
+Expected monthly return: 2.28% (27.4% annual / 12)
+Expected monthly std: 6.41% (22.2% annual / √12)
+
+After n months:
+  Expected cumulative return = 2.28% × n
+  Expected std = 6.41% × √n
+  
+z = (actual_cumulative - expected_cumulative) / expected_std
+```
+
+| z-score | Probability of being this bad by chance | Interpretation |
+|---------|----------------------------------------|----------------|
+| z > 1.5 | Top 6.7% | Significantly outperforming |
+| z ∈ [-1, 1.5] | Middle 84% | Normal variance |
+| z ∈ [-2, -1) | Bottom 2-16% | Below expectations |
+| z < -2 | Bottom 2.3% | Statistically unlikely if thesis holds |
+
+**2. Volatility Chi-Squared Test**
+
+Tests whether realized volatility differs significantly from the backtest volatility (22.2% annual).
+
+```
+H₀: σ² = expected variance
+χ² = (n-1) × sample_var / expected_var
+p-value from chi-squared distribution
+```
+
+- **p < 0.05**: Volatility is statistically different from backtest — risk profile has changed.
+
+**3. Win Rate Binomial Test**
+
+Tests whether the observed win rate is consistent with the backtest win rate (70.6%).
+
+```
+H₀: p = 0.706 (backtest win rate)
+p-value = P(observing ≤ k wins | n trials, p = 0.706)
+```
+
+- **p < 0.05**: Win rate is statistically below expected.
+
+### Strategy States
+
+The badge displays one of the following states based on the evaluation logic:
+
+| State | Conditions | Color | Action |
+|-------|------------|-------|--------|
+| **Review Thesis** | z < -2 | Black | Returns are 2+ std below expected (<2.3% chance if strategy works). Stop and investigate. |
+| **Max Drawdown Breached** | DD < -34.6% | Red | Exceeded historical max drawdown. Unprecedented territory. |
+| **Underperforming Backtest** | z ∈ [-2, -1) AND (win rate p<0.05 OR DD < -25%) | Red | Below expectations with supporting red flags. Discuss next steps. |
+| **Lucky** | z > 1 AND vol significantly high AND Sharpe < 0.7 | Orange | Good returns but driven by excessive risk, not skill. Don't get overconfident. |
+| **High Volatility** | Vol significantly high (p<0.05) AND Sharpe < 0.7 | Orange | Risk is elevated without commensurate reward. |
+| **Outperforming Backtest** | z > 1.5 AND Sharpe > 1.20 | Green | Beating expectations with strong risk-adjusted returns. |
+| **On Track** | Everything else | Green | Normal variance. Strategy performing as expected. |
+
+### Interpretation Guidelines
+
+- **z-score** tells you if cumulative returns are on track. A single bad month can drag it down temporarily — factor strategies have rough patches.
+- **Volatility p-value** tells you if risk has structurally changed. High vol with good Sharpe is fine; high vol with poor Sharpe is concerning.
+- **Win rate** matters less for monthly rebalancing. A few losing months don't invalidate the thesis.
+- **Drawdown** is compared against historical max (-34.6%). Approaching or exceeding this level warrants attention.
+
 ## Monthly Update Workflow
 
 **1. Run the update script** (requires IBKR TWS running on localhost:7496):
