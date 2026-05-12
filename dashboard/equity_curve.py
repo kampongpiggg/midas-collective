@@ -245,8 +245,10 @@ def generate_equity_curve() -> dict:
     injection_dates = {inj["date"]: inj["amount"] for inj in CAPITAL_INJECTIONS}
 
     prev_value = portfolio_values[0]
+    prev_spy_value = spy_values[0]
     prev_month = all_dates[0][:7]
     cumulative_injection = 0
+    monthly_spy_returns = []
 
     for i, date in enumerate(all_dates):
         curr_month = date[:7]
@@ -262,7 +264,11 @@ def generate_equity_curve() -> dict:
             monthly_ret = ((adj_curr / adj_prev) - 1) * 100 if adj_prev else 0
             monthly_returns.append(monthly_ret)
             monthly_dates.append(prev_month)
+            # SPY monthly return
+            spy_ret = ((spy_values[i - 1] / prev_spy_value) - 1) * 100 if prev_spy_value else 0
+            monthly_spy_returns.append(spy_ret)
             prev_value = portfolio_values[i - 1]
+            prev_spy_value = spy_values[i - 1]
             prev_month = curr_month
 
     # Current drawdown
@@ -335,6 +341,16 @@ def generate_equity_curve() -> dict:
         realized_annual_vol = None
         vol_pvalue = None
 
+    # Paired t-test: portfolio vs SPY monthly returns
+    # H0: mean(portfolio - SPY) = 0, H1: mean(portfolio - SPY) > 0
+    if len(monthly_returns) >= 2 and len(monthly_spy_returns) >= 2:
+        excess_returns = [p - s for p, s in zip(monthly_returns, monthly_spy_returns)]
+        t_stat, two_tailed_p = stats.ttest_1samp(excess_returns, 0)
+        # One-tailed p-value (we care if portfolio > SPY)
+        alpha_pvalue = two_tailed_p / 2 if t_stat > 0 else 1 - two_tailed_p / 2
+    else:
+        alpha_pvalue = None
+
     return {
         "dates": all_dates,
         "portfolio_values": portfolio_values,
@@ -354,6 +370,7 @@ def generate_equity_curve() -> dict:
         "z_score": round(z_score, 2),
         "realized_vol": round(realized_annual_vol, 1) if realized_annual_vol is not None else None,
         "vol_pvalue": round(vol_pvalue, 3) if vol_pvalue is not None else None,
+        "alpha_pvalue": round(alpha_pvalue, 3) if alpha_pvalue is not None else None,
         "monthly_returns": [round(r, 2) for r in monthly_returns],
         # Expected values for comparison
         "expected_sharpe": EXPECTED_SHARPE,
