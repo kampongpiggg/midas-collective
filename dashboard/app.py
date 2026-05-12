@@ -178,7 +178,7 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         st.markdown(
             f"""<div style='background:linear-gradient(135deg, {status_color}22, {status_color}11);
                 border:1px solid {status_color}44; border-radius:12px; padding:16px;'>
-                <div style='font-size:1.4rem; font-weight:bold; color:{status_color}; margin-bottom:10px; text-align:center;'>
+                <div style='font-size:2.5rem; font-weight:bold; color:{status_color}; margin-bottom:10px; text-align:center;'>
                     {status}
                 </div>
                 <div style='display:flex; font-size:0.8rem; color:#aaa;'>
