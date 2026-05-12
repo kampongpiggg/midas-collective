@@ -36,12 +36,25 @@ def load_metrics() -> dict:
 
 @st.cache_data(ttl=900)
 def load_cluster_buys() -> list[dict]:
-    """Fetch cluster buys from OpenInsider (cached for 15 minutes)."""
+    """Fetch cluster buys from OpenInsider (cached for 15 minutes).
+    Falls back to cached data from metrics JSON if live fetch fails."""
     try:
-        return fetch_cluster_buys()
+        data = fetch_cluster_buys()
+        if data and len(data) > 0:
+            return data
     except Exception as e:
-        st.warning(f"Failed to fetch cluster buys: {e}")
-        return []
+        pass  # Fall through to cached data
+
+    # Fallback to cached data from metrics JSON
+    try:
+        if BACKTEST_METRICS_JSON.exists():
+            with open(BACKTEST_METRICS_JSON) as f:
+                cached = json.load(f)
+                return cached.get("cluster_buys", [])
+    except Exception:
+        pass
+
+    return []
 
 
 def get_scored_factors_mtime() -> datetime | None:
