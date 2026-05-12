@@ -242,29 +242,48 @@ with w_col3:
 # Row 2: VIX Chart, Fear & Greed Gauge, Cluster Buys
 w_col4, w_col5, w_col6 = st.columns(3)
 
-_vix_config = json.dumps({
-    "symbol": "CBOE:VIX",
-    "width": "100%",
-    "height": str(_widget_height - 40),
-    "locale": "en",
-    "dateRange": "3M",
-    "colorTheme": "dark",
-    "isTransparent": True,
-    "autosize": True,
-    "largeChartUrl": "",
-})
-
 with w_col4:
     st.subheader("VIX")
-    st.components.v1.html(
-        f"""<div class="tradingview-widget-container">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript"
-                  src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
-                  async>{_vix_config}</script>
-        </div>""",
-        height=_widget_height,
-    )
+    vix_val = vix_data.get("value")
+    vix_change = vix_data.get("change_pct")
+    vix_status = vix_data.get("status", "N/A")
+    vix_color = get_vix_color(vix_val)
+
+    if vix_val is not None:
+        # Create gauge chart for VIX
+        fig_vix = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=vix_val,
+            delta={"reference": vix_val - (vix_data.get("change") or 0), "relative": False},
+            domain={"x": [0, 1], "y": [0, 1]},
+            title={"text": vix_status, "font": {"size": 20}},
+            gauge={
+                "axis": {"range": [0, 50], "tickwidth": 1, "tickcolor": "white"},
+                "bar": {"color": vix_color},
+                "bgcolor": "rgba(0,0,0,0)",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0, 15], "color": "#14532d"},
+                    {"range": [15, 20], "color": "#365314"},
+                    {"range": [20, 30], "color": "#7c2d12"},
+                    {"range": [30, 50], "color": "#450a0a"},
+                ],
+                "threshold": {
+                    "line": {"color": "white", "width": 4},
+                    "thickness": 0.75,
+                    "value": vix_val,
+                },
+            },
+        ))
+        fig_vix.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font={"color": "white"},
+            height=_widget_height - 50,
+            margin=dict(l=20, r=20, t=50, b=20),
+        )
+        st.plotly_chart(fig_vix, use_container_width=True)
+    else:
+        st.info("VIX data unavailable")
 
 with w_col5:
     st.subheader("Fear & Greed Index")
