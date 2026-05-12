@@ -179,10 +179,13 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
                 <div style='display:flex; font-size:0.8rem; color:#aaa;'>
                     <div style='flex:1; line-height:1.8;'>
                         <b>Returns:</b> z={z_score:+.1f}<br>
-                        <b>Volatility:</b> {vol_str} {vol_p_str}
+                        <span style='font-size:0.7rem; color:#666;'>z&lt;-2: underperforming</span><br>
+                        <b>Volatility:</b> {vol_str} {vol_p_str}<br>
+                        <span style='font-size:0.7rem; color:#666;'>p&lt;0.05: differs from backtest</span>
                     </div>
                     <div style='flex:1; line-height:1.8;'>
                         <b>Win Rate:</b> {win_str} {win_p_str}<br>
+                        <span style='font-size:0.7rem; color:#666;'>p&lt;0.05: below expected 70.6%</span><br>
                         <b>Sharpe:</b> {sharpe_str}<br>
                         <b>Drawdown:</b> {drawdown:.1f}%
                     </div>
