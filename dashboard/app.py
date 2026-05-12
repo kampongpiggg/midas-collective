@@ -172,16 +172,20 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
 
         st.markdown(
             f"""<div style='background:linear-gradient(135deg, {status_color}22, {status_color}11);
-                border:1px solid {status_color}44; border-radius:12px; padding:16px; text-align:center;'>
-                <div style='font-size:1.4rem; font-weight:bold; color:{status_color}; margin-bottom:8px;'>
+                border:1px solid {status_color}44; border-radius:12px; padding:16px;'>
+                <div style='font-size:1.4rem; font-weight:bold; color:{status_color}; margin-bottom:10px; text-align:center;'>
                     {status}
                 </div>
-                <div style='font-size:0.8rem; color:#aaa; line-height:1.6;'>
-                    <b>Returns:</b> z={z_score:+.1f}<br>
-                    <b>Sharpe:</b> {sharpe_str} (exp {expected_sharpe})<br>
-                    <b>Volatility:</b> {vol_str} (exp {expected_vol:.0f}%) {vol_p_str}<br>
-                    <b>Win Rate:</b> {win_str} {win_p_str}<br>
-                    <b>Drawdown:</b> {drawdown:.1f}% (max {expected_max_dd}%)
+                <div style='display:flex; font-size:0.8rem; color:#aaa;'>
+                    <div style='flex:1; line-height:1.8;'>
+                        <b>Returns:</b> z={z_score:+.1f}<br>
+                        <b>Sharpe:</b> {sharpe_str}<br>
+                        <b>Volatility:</b> {vol_str} {vol_p_str}
+                    </div>
+                    <div style='flex:1; line-height:1.8;'>
+                        <b>Win Rate:</b> {win_str} {win_p_str}<br>
+                        <b>Drawdown:</b> {drawdown:.1f}%
+                    </div>
                 </div>
             </div>""",
             unsafe_allow_html=True,
