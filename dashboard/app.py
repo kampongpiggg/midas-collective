@@ -14,7 +14,7 @@ import streamlit as st
 import plotly.graph_objects as go
 
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
-from update_data import fetch_cluster_buys
+from cluster_buys import fetch_cluster_buys
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
