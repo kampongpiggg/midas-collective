@@ -10,7 +10,6 @@ from datetime import datetime
 
 import pandas as pd
 import streamlit as st
-
 import plotly.graph_objects as go
 
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
@@ -37,30 +36,25 @@ def load_metrics() -> dict:
 
 @st.cache_data(ttl=900)
 def load_cluster_buys() -> list[dict]:
-    """Fetch cluster buys from OpenInsider (cached for 15 minutes).
-    Falls back to cached data from metrics JSON if live fetch fails."""
+    """Fetch cluster buys from OpenInsider (cached for 15 minutes)."""
     try:
         data = fetch_cluster_buys()
         if data and len(data) > 0:
             return data
-    except Exception as e:
-        pass  # Fall through to cached data
-
-    # Fallback to cached data from metrics JSON
+    except Exception:
+        pass
+    # Fallback to cached data
     try:
         if BACKTEST_METRICS_JSON.exists():
             with open(BACKTEST_METRICS_JSON) as f:
-                cached = json.load(f)
-                return cached.get("cluster_buys", [])
+                return json.load(f).get("cluster_buys", [])
     except Exception:
         pass
-
     return []
 
 
 @st.cache_data(ttl=300)
 def load_vix() -> dict:
-    """Fetch VIX from Yahoo Finance (cached for 5 minutes)."""
     try:
         return fetch_vix()
     except Exception:
@@ -69,7 +63,6 @@ def load_vix() -> dict:
 
 @st.cache_data(ttl=300)
 def load_fear_greed() -> dict:
-    """Fetch Fear & Greed Index from CNN (cached for 5 minutes)."""
     try:
         return fetch_fear_greed()
     except Exception:
@@ -87,21 +80,14 @@ cluster_buys = load_cluster_buys()
 vix_data = load_vix()
 fear_greed_data = load_fear_greed()
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  Section 1 — Monthly Stock Picks (primary use case)
-# ═══════════════════════════════════════════════════════════════════════════
-
+# ── Title ──────────────────────────────────────────────────────────────────
 st.title("The Midas Collective")
-st.caption("Factor Dashboard")
 
-# ── Ticker tape of current holdings ─────────────────────────────────────
+# ── Ticker tape ────────────────────────────────────────────────────────────
 _tape_holdings = metrics.get("current_holdings", [])
 if _tape_holdings:
     _tape_config = json.dumps({
-        "symbols": [
-            {"proName": h["ticker"], "title": h["ticker"]}
-            for h in _tape_holdings
-        ],
+        "symbols": [{"proName": h["ticker"], "title": h["ticker"]} for h in _tape_holdings],
         "showSymbolLogo": True,
         "isTransparent": True,
         "displayMode": "adaptive",
@@ -118,57 +104,36 @@ if _tape_holdings:
         height=78,
     )
 
-# ── Market Sentiment Indicators ─────────────────────────────────────────
-sent_col1, sent_col2, sent_col3 = st.columns([1, 1, 2])
 
-with sent_col1:
-    vix_val = vix_data.get("value")
-    vix_change = vix_data.get("change_pct")
-    vix_status = vix_data.get("status", "N/A")
-    vix_color = get_vix_color(vix_val)
+# ═══════════════════════════════════════════════════════════════════════════
+#  Section 1 — Expected Portfolio Performance
+# ═══════════════════════════════════════════════════════════════════════════
 
-    if vix_val is not None:
-        delta_str = f"{vix_change:+.1f}%" if vix_change else None
-        st.metric("VIX", f"{vix_val:.1f}", delta=delta_str, delta_color="inverse")
-        st.markdown(
-            f"<span style='color:{vix_color};font-weight:bold'>{vix_status}</span>",
-            unsafe_allow_html=True,
-        )
-    else:
-        st.metric("VIX", "N/A")
+st.header("Expected Portfolio Performance")
 
-with sent_col2:
-    fg_val = fear_greed_data.get("value")
-    fg_rating = fear_greed_data.get("rating", "N/A")
-    fg_prev = fear_greed_data.get("previous_value")
-    fg_color = get_fear_greed_color(fg_val)
+m = metrics
+c1, c2, c3, c4, c5 = st.columns(5)
+c1.metric("Annualized Return", f"{m.get('ann_return', 0):.1%}")
+c2.metric("Sharpe Ratio", f"{m.get('sharpe', 0):.2f}")
+c3.metric("Max Drawdown", f"{m.get('max_drawdown', 0):.1%}")
+c4.metric("Annualized Vol", f"{m.get('ann_vol', 0):.1%}")
+c5.metric("Monthly Win Rate", f"{m.get('win_rate_monthly', 0):.1%}")
 
-    if fg_val is not None:
-        delta_str = f"{fg_val - fg_prev:+.0f}" if fg_prev else None
-        st.metric("Fear & Greed", f"{fg_val:.0f}", delta=delta_str)
-        st.markdown(
-            f"<span style='color:{fg_color};font-weight:bold'>{fg_rating}</span>",
-            unsafe_allow_html=True,
-        )
-    else:
-        st.metric("Fear & Greed", "N/A")
+bt_start = m.get("backtest_start", "?")
+bt_end = m.get("backtest_end", "?")
+n_months = m.get("num_months", "?")
+st.caption(f"Backtest period: {bt_start} — {bt_end} ({n_months} months)")
 
-with sent_col3:
-    st.caption("Market Sentiment")
-    st.markdown(
-        "<small>VIX: &lt;15 Low, 15-20 Normal, 20-30 Elevated, &gt;30 High<br>"
-        "F&G: 0-25 Extreme Fear, 25-45 Fear, 45-55 Neutral, 55-75 Greed, 75-100 Extreme Greed</small>",
-        unsafe_allow_html=True,
-    )
 
-st.divider()
+# ═══════════════════════════════════════════════════════════════════════════
+#  Section 2 — Current Picks
+# ═══════════════════════════════════════════════════════════════════════════
 
 rebal_date = metrics.get("last_rebalance_date", "N/A")
-rebal_dt = pd.to_datetime(rebal_date)
-month_label = rebal_dt.strftime("%B %Y") if rebal_date != "N/A" else "N/A"
+rebal_dt = pd.to_datetime(rebal_date) if rebal_date != "N/A" else None
+month_label = rebal_dt.strftime("%B %Y") if rebal_dt else "N/A"
 
 st.header(f"Current Picks — {month_label}")
-st.caption(f"Rebalance date: {rebal_date}")
 
 holdings = metrics.get("current_holdings", [])
 if holdings:
@@ -182,235 +147,255 @@ if holdings:
         "ticker": "Ticker",
         "sector": "Sector",
         "weight": "Weight",
-        "alpha_score": "Alpha Score",
-        "value_score": "Value Score",
-        "quality_score": "Quality Score",
-        "momentum_score": "Momentum Score",
+        "alpha_score": "Alpha",
+        "value_score": "Value",
+        "quality_score": "Quality",
+        "momentum_score": "Momentum",
     }
     st.dataframe(
         picks_df[display_cols].rename(columns=col_labels),
         use_container_width=True,
         height=400,
     )
-
-    # ── Market widgets (Economics, Calendar, News) ────────────────────
-    _widget_height = 500
-
-    _sgdusd_config = json.dumps({
-        "symbol": "FX_IDC:SGDUSD",
-        "width": "100%",
-        "height": str(_widget_height - 40),
-        "locale": "en",
-        "dateRange": "12M",
-        "colorTheme": "dark",
-        "isTransparent": True,
-        "autosize": True,
-        "largeChartUrl": "",
-    })
-
-    _cal_config = json.dumps({
-        "colorTheme": "dark",
-        "isTransparent": True,
-        "width": "100%",
-        "height": str(_widget_height - 40),
-        "locale": "en",
-        "importanceFilter": "-1,0,1",
-        "countryFilter": "us",
-    })
-
-    _news_config = json.dumps({
-        "feedMode": "market",
-        "market": "stock",
-        "isTransparent": True,
-        "displayMode": "regular",
-        "width": "100%",
-        "height": str(_widget_height - 40),
-        "colorTheme": "dark",
-        "locale": "en",
-    })
-
-    w_col1, w_col2, w_col3 = st.columns(3)
-
-    with w_col1:
-        st.subheader("SGD / USD")
-        st.components.v1.html(
-            f"""<div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript"
-                      src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
-                      async>{_sgdusd_config}</script>
-            </div>""",
-            height=_widget_height,
-        )
-
-    with w_col2:
-        st.subheader("Calendar")
-        st.components.v1.html(
-            f"""<div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript"
-                      src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"
-                      async>{_cal_config}</script>
-            </div>""",
-            height=_widget_height,
-        )
-
-    with w_col3:
-        st.subheader("News")
-        st.components.v1.html(
-            f"""<div class="tradingview-widget-container">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript"
-                      src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"
-                      async>{_news_config}</script>
-            </div>""",
-            height=_widget_height,
-        )
-
 else:
     st.warning("No holdings data found. Run `python update_data.py`.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 2 — Insider Cluster Buys
+#  Section 3 — Market Widgets Row
 # ═══════════════════════════════════════════════════════════════════════════
 
-st.header("Insider Cluster Buys")
-st.caption("3+ officers/directors buying $200k+ in the last 30 days (via OpenInsider)")
+_widget_height = 400
 
-if cluster_buys and len(cluster_buys) > 0:
-    cluster_df = pd.DataFrame(cluster_buys)
-    cluster_df.index = range(1, len(cluster_df) + 1)
-    cluster_df.index.name = "#"
+# Row 1: SGD/USD, Calendar, News
+w_col1, w_col2, w_col3 = st.columns(3)
 
-    # Handle both old (total_value) and new (value) field names
-    value_col = "value" if "value" in cluster_df.columns else "total_value"
-    price_col = "price" if "price" in cluster_df.columns else "avg_price"
-    date_col = "trade_date" if "trade_date" in cluster_df.columns else "latest_filing"
+_sgdusd_config = json.dumps({
+    "symbol": "FX_IDC:SGDUSD",
+    "width": "100%",
+    "height": str(_widget_height - 40),
+    "locale": "en",
+    "dateRange": "12M",
+    "colorTheme": "dark",
+    "isTransparent": True,
+    "autosize": True,
+    "largeChartUrl": "",
+})
 
-    if value_col in cluster_df.columns:
-        cluster_df["value_fmt"] = cluster_df[value_col].apply(lambda x: f"${x:,.0f}")
-    else:
-        cluster_df["value_fmt"] = "—"
+_cal_config = json.dumps({
+    "colorTheme": "dark",
+    "isTransparent": True,
+    "width": "100%",
+    "height": str(_widget_height - 40),
+    "locale": "en",
+    "importanceFilter": "-1,0,1",
+    "countryFilter": "us",
+})
 
-    if price_col in cluster_df.columns:
-        cluster_df["price_fmt"] = cluster_df[price_col].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
-    else:
-        cluster_df["price_fmt"] = "—"
+_news_config = json.dumps({
+    "feedMode": "market",
+    "market": "stock",
+    "isTransparent": True,
+    "displayMode": "regular",
+    "width": "100%",
+    "height": str(_widget_height - 40),
+    "colorTheme": "dark",
+    "locale": "en",
+})
 
-    if "qty" in cluster_df.columns:
-        cluster_df["qty_fmt"] = cluster_df["qty"].apply(lambda x: f"{x:,}")
-    else:
-        cluster_df["qty_fmt"] = "—"
-
-    col_labels = {
-        "ticker": "Ticker",
-        "company": "Company",
-        "insider_count": "Insiders",
-        date_col: "Date",
-        "price_fmt": "Price",
-        "qty_fmt": "Shares",
-        "value_fmt": "Value",
-    }
-
-    display_cols = ["ticker", "company", "insider_count", date_col, "price_fmt", "qty_fmt", "value_fmt"]
-    # Only include columns that exist
-    display_cols = [c for c in display_cols if c in cluster_df.columns]
-
-    st.dataframe(
-        cluster_df[display_cols].rename(columns=col_labels),
-        use_container_width=True,
-        height=min(400, 50 + len(cluster_df) * 35),
+with w_col1:
+    st.subheader("SGD / USD")
+    st.components.v1.html(
+        f"""<div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript"
+                  src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
+                  async>{_sgdusd_config}</script>
+        </div>""",
+        height=_widget_height,
     )
-else:
-    st.info("No cluster buys found. OpenInsider may be temporarily unavailable.")
+
+with w_col2:
+    st.subheader("Calendar")
+    st.components.v1.html(
+        f"""<div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript"
+                  src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"
+                  async>{_cal_config}</script>
+        </div>""",
+        height=_widget_height,
+    )
+
+with w_col3:
+    st.subheader("News")
+    st.components.v1.html(
+        f"""<div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript"
+                  src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"
+                  async>{_news_config}</script>
+        </div>""",
+        height=_widget_height,
+    )
+
+# Row 2: VIX Chart, Fear & Greed Gauge, Cluster Buys
+w_col4, w_col5, w_col6 = st.columns(3)
+
+_vix_config = json.dumps({
+    "symbol": "CBOE:VIX",
+    "width": "100%",
+    "height": str(_widget_height - 40),
+    "locale": "en",
+    "dateRange": "3M",
+    "colorTheme": "dark",
+    "isTransparent": True,
+    "autosize": True,
+    "largeChartUrl": "",
+})
+
+with w_col4:
+    st.subheader("VIX")
+    st.components.v1.html(
+        f"""<div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript"
+                  src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js"
+                  async>{_vix_config}</script>
+        </div>""",
+        height=_widget_height,
+    )
+
+with w_col5:
+    st.subheader("Fear & Greed Index")
+    fg_val = fear_greed_data.get("value")
+    fg_rating = fear_greed_data.get("rating", "N/A")
+
+    if fg_val is not None:
+        # Create gauge chart
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=fg_val,
+            domain={"x": [0, 1], "y": [0, 1]},
+            title={"text": fg_rating, "font": {"size": 20}},
+            gauge={
+                "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "white"},
+                "bar": {"color": get_fear_greed_color(fg_val)},
+                "bgcolor": "rgba(0,0,0,0)",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0, 25], "color": "#450a0a"},
+                    {"range": [25, 45], "color": "#7c2d12"},
+                    {"range": [45, 55], "color": "#713f12"},
+                    {"range": [55, 75], "color": "#365314"},
+                    {"range": [75, 100], "color": "#14532d"},
+                ],
+                "threshold": {
+                    "line": {"color": "white", "width": 4},
+                    "thickness": 0.75,
+                    "value": fg_val,
+                },
+            },
+        ))
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font={"color": "white"},
+            height=_widget_height - 50,
+            margin=dict(l=20, r=20, t=50, b=20),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Fear & Greed data unavailable")
+
+with w_col6:
+    st.subheader("Latest Insider Cluster Buys")
+    if cluster_buys and len(cluster_buys) > 0:
+        cluster_df = pd.DataFrame(cluster_buys)
+
+        # Handle field names
+        value_col = "value" if "value" in cluster_df.columns else "total_value"
+        date_col = "trade_date" if "trade_date" in cluster_df.columns else "latest_filing"
+
+        if value_col in cluster_df.columns:
+            cluster_df["value_fmt"] = cluster_df[value_col].apply(lambda x: f"${x:,.0f}")
+        else:
+            cluster_df["value_fmt"] = "—"
+
+        display_cols = ["ticker", "insider_count", "value_fmt"]
+        display_cols = [c for c in display_cols if c in cluster_df.columns]
+
+        col_labels = {"ticker": "Ticker", "insider_count": "Ins", "value_fmt": "Value"}
+
+        st.dataframe(
+            cluster_df[display_cols].rename(columns=col_labels).head(7),
+            use_container_width=True,
+            hide_index=True,
+            height=_widget_height - 80,
+        )
+        st.caption("3+ insiders, $200k+ (last 30 days)")
+    else:
+        st.info("No cluster buys found")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 3 — Selection Frequency Heatmap
+#  Section 4 — Sector Rotation Heatmap
 # ═══════════════════════════════════════════════════════════════════════════
 
-st.header("Selection Frequency Heatmap")
+st.header("Sector Rotation Heatmap")
 
 monthly_picks = metrics.get("monthly_picks", {})
-if len(monthly_picks) >= 1:
-    # Last 3 months
-    recent_months = sorted(monthly_picks.keys(), reverse=True)[:3]
-    n_months = len(recent_months)
+if holdings and len(monthly_picks) >= 1:
+    # Get sector distribution for last 6 months
+    recent_months = sorted(monthly_picks.keys(), reverse=True)[:6]
 
-    # Count how many times each ticker was selected
-    freq = {t: 0 for t in SP500_TICKERS}
-    for m in recent_months:
-        for t in monthly_picks[m].get("tickers", []):
-            if t in freq:
-                freq[t] += 1
+    # Build sector counts per month
+    sector_map = {h["ticker"]: h.get("sector", "Unknown") for h in holdings}
+    sectors = sorted(set(sector_map.values()))
 
-    # Sort: most frequently selected first, then alphabetically
-    sorted_tickers = sorted(SP500_TICKERS, key=lambda t: (-freq[t], t))
+    heatmap_data = []
+    for month in reversed(recent_months):
+        tickers = monthly_picks[month].get("tickers", [])
+        sector_counts = {s: 0 for s in sectors}
+        for t in tickers:
+            sec = sector_map.get(t, "Unknown")
+            if sec in sector_counts:
+                sector_counts[sec] += 1
+        heatmap_data.append([sector_counts.get(s, 0) for s in sectors])
 
-    # Arrange into 10 × 10 grid
-    grid_size = 10
-    grid_z = []
-    grid_text = []
-    for r in range(grid_size):
-        row_z = []
-        row_text = []
-        for c in range(grid_size):
-            idx = r * grid_size + c
-            if idx < len(sorted_tickers):
-                ticker = sorted_tickers[idx]
-                row_z.append(freq[ticker])
-                row_text.append(ticker)
-            else:
-                row_z.append(0)
-                row_text.append("")
-        grid_z.append(row_z)
-        grid_text.append(row_text)
+    if heatmap_data and sectors:
+        fig = go.Figure(data=go.Heatmap(
+            z=heatmap_data,
+            x=sectors,
+            y=list(reversed(recent_months)),
+            colorscale=[[0, "#000000"], [0.5, "#14532d"], [1, "#22c55e"]],
+            showscale=True,
+            colorbar=dict(title="Picks"),
+            hovertemplate="<b>%{x}</b><br>%{y}: %{z} picks<extra></extra>",
+            xgap=2,
+            ygap=2,
+        ))
 
-    fig = go.Figure(data=go.Heatmap(
-        z=grid_z,
-        text=grid_text,
-        texttemplate="%{text}",
-        textfont=dict(size=11, color="white"),
-        colorscale=[[0, "#000000"], [0.5, "#14532d"], [1, "#22c55e"]],
-        zmin=0,
-        zmax=n_months,
-        showscale=True,
-        colorbar=dict(
-            title="Times<br>Selected",
-            tickvals=list(range(n_months + 1)),
-        ),
-        hovertemplate="<b>%{text}</b><br>Selected %{z}/%{customdata} months<extra></extra>",
-        customdata=[[n_months] * grid_size for _ in range(grid_size)],
-        xgap=3,
-        ygap=3,
-    ))
+        fig.update_layout(
+            xaxis=dict(side="top", tickangle=-45),
+            yaxis=dict(autorange="reversed"),
+            height=300,
+            margin=dict(l=20, r=20, t=80, b=20),
+        )
 
-    fig.update_layout(
-        xaxis=dict(showticklabels=False, showgrid=False, zeroline=False),
-        yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, autorange="reversed"),
-        height=600,
-        margin=dict(l=20, r=80, t=20, b=20),
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-    months_str = ", ".join(sorted(recent_months))
-    st.caption(
-        f"All {len(SP500_TICKERS)} universe stocks in a 10×10 grid. "
-        f"Color intensity = times selected in the last {n_months} month{'s' if n_months != 1 else ''} "
-        f"({months_str}). Sorted by frequency (most selected top-left)."
-    )
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption("Number of picks per sector over the last 6 months")
+    else:
+        st.info("Not enough data to show sector rotation")
 else:
-    st.info("Need at least 1 month of picks data for the heatmap. Run `python update_data.py`.")
+    st.info("Need picks history for sector rotation heatmap")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 4 — Data Freshness Bar
+#  Section 5 — Data Freshness
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.header("Data Freshness")
 
-# Prefer scored_factors.csv mtime if available (local), fall back to JSON rebalance date (cloud)
 mtime = get_scored_factors_mtime()
 if mtime is not None:
     last_updated = mtime
@@ -424,14 +409,11 @@ if last_updated is not None:
     days_since = (datetime.now() - last_updated).days
 
     if days_since < 25:
-        color = "green"
-        status = "Fresh"
+        color, status = "green", "Fresh"
     elif days_since < STALE_THRESHOLD_DAYS:
-        color = "orange"
-        status = "Aging"
+        color, status = "orange", "Aging"
     else:
-        color = "red"
-        status = "STALE"
+        color, status = "red", "STALE"
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -447,48 +429,21 @@ if last_updated is not None:
         )
 
     if days_since >= STALE_THRESHOLD_DAYS:
-        st.warning(
-            f"Data is **{days_since} days old** (threshold: {STALE_THRESHOLD_DAYS} days). "
-            "Run `python update_data.py` to refresh."
-        )
+        st.warning(f"Data is **{days_since} days old**. Run `python update_data.py` to refresh.")
 else:
-    st.info("No update history available. Run `python update_data.py` to populate.")
+    st.info("No update history available.")
 
-# ── Monthly picks history ──────────────────────────────────────────
-st.subheader("Monthly Picks History")
-
-monthly_picks_hist = metrics.get("monthly_picks", {})
-if monthly_picks_hist:
-    history_rows = []
-    for month_key in sorted(monthly_picks_hist.keys(), reverse=True):
-        entry = monthly_picks_hist[month_key]
-        history_rows.append({
-            "Month": month_key,
-            "Rebalance Date": entry.get("date", ""),
-            "Picks": ", ".join(entry.get("tickers", [])),
-            "Count": len(entry.get("tickers", [])),
-        })
-    history_df = pd.DataFrame(history_rows)
-    st.dataframe(history_df, use_container_width=True, hide_index=True)
-else:
-    st.info("No monthly picks history yet. Run `python update_data.py` to populate.")
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Section 5 — Backtest Summary Metrics
-# ═══════════════════════════════════════════════════════════════════════════
-
-st.header("Backtest Summary")
-
-m = metrics
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Annualized Return", f"{m.get('ann_return', 0):.1%}")
-c2.metric("Sharpe Ratio", f"{m.get('sharpe', 0):.2f}")
-c3.metric("Max Drawdown", f"{m.get('max_drawdown', 0):.1%}")
-c4.metric("Annualized Vol", f"{m.get('ann_vol', 0):.1%}")
-c5.metric("Monthly Win Rate", f"{m.get('win_rate_monthly', 0):.1%}")
-
-bt_start = m.get("backtest_start", "?")
-bt_end   = m.get("backtest_end", "?")
-n_months = m.get("num_months", "?")
-st.caption(f"Backtest period: {bt_start} — {bt_end} ({n_months} months). Updated annually with new universe.")
+# Monthly picks history
+with st.expander("Monthly Picks History"):
+    if monthly_picks:
+        history_rows = []
+        for month_key in sorted(monthly_picks.keys(), reverse=True):
+            entry = monthly_picks[month_key]
+            history_rows.append({
+                "Month": month_key,
+                "Date": entry.get("date", ""),
+                "Picks": ", ".join(entry.get("tickers", [])),
+            })
+        st.dataframe(pd.DataFrame(history_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("No history yet.")
