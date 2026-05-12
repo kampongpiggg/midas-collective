@@ -181,16 +181,21 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
                 <div style='font-size:1.8rem; font-weight:bold; color:{status_color}; margin-bottom:8px; text-align:center;'>
                     {status}
                 </div>
-                <div style='display:flex; font-size:0.75rem; color:#aaa;'>
-                    <div style='flex:1; line-height:1.6;'>
-                        <b>Returns:</b> z={z_score:+.1f}<br>
-                        <span style='font-size:0.65rem; color:#666;'>z&lt;-2: underperform</span><br>
-                        <b>Vol:</b> {vol_str} {vol_p_str}
+                <div style='display:flex; font-size:0.7rem; color:#aaa; text-align:center;'>
+                    <div style='flex:1;'>
+                        <b>Returns</b><br>z={z_score:+.1f}
                     </div>
-                    <div style='flex:1; line-height:1.6;'>
-                        <b>Win:</b> {win_str} {win_p_str}<br>
-                        <b>Sharpe:</b> {sharpe_str}<br>
-                        <b>DD:</b> {drawdown:.1f}%
+                    <div style='flex:1;'>
+                        <b>Vol</b><br>{vol_str}<br><span style='font-size:0.6rem;'>{vol_p_str}</span>
+                    </div>
+                    <div style='flex:1;'>
+                        <b>Win</b><br>{win_str}<br><span style='font-size:0.6rem;'>{win_p_str}</span>
+                    </div>
+                    <div style='flex:1;'>
+                        <b>Sharpe</b><br>{sharpe_str}
+                    </div>
+                    <div style='flex:1;'>
+                        <b>DD</b><br>{drawdown:.1f}%
                     </div>
                 </div>
             </div>""",
