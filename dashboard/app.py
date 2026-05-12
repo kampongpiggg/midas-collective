@@ -54,9 +54,9 @@ def load_cluster_buys() -> list[dict]:
     return []
 
 
-@st.cache_data(ttl=3600)
-def load_equity_curve(_version: int = 2) -> dict:
-    """Load equity curve data (cached for 1 hour)."""
+@st.cache_data(ttl=1800)
+def load_equity_curve() -> dict:
+    """Load equity curve data (cached for 30 min)."""
     try:
         return generate_equity_curve()
     except Exception as e:
