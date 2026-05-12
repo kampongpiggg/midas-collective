@@ -189,7 +189,7 @@ Streamlit Cloud auto-redeploys when the repo updates, so the dashboard will refl
 
 Once a year (January), run `python update_data.py --full` instead to regenerate the backtest metrics for the new universe.
 
-## Equity Curve Update Workflow
+### Equity Curve Update
 
 The equity curve tracks live portfolio performance. It requires position snapshots after each rebalance.
 
