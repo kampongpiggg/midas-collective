@@ -160,20 +160,30 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         expected_sharpe = ec.get("expected_sharpe", 1.20)
         expected_max_dd = ec.get("expected_max_dd", -34.6)
 
-        # Overall status based on z-score
-        if z_score >= -1:
-            status, status_color = "On Track", "#22c55e"
-        elif z_score >= -2:
-            status, status_color = "Monitor", "#f97316"
+        # Determine status based on multiple factors
+        vol_sig_high = vol_pvalue is not None and vol_pvalue < 0.05 and realized_vol and realized_vol > expected_vol
+        win_sig_low = win_pvalue is not None and win_pvalue < 0.05
+        sharpe_low = rolling_sharpe is not None and rolling_sharpe < 0.7
+
+        if z_score < -2 or (win_sig_low and vol_sig_high):
+            status, status_color = "Review Thesis", "#dc2626"
+        elif drawdown < -25:
+            status, status_color = "High Risk", "#dc2626"
+        elif z_score < -1.5:
+            status, status_color = "Underperforming", "#f97316"
+        elif vol_sig_high and sharpe_low:
+            status, status_color = "High Volatility", "#f97316"
+        elif win_sig_low:
+            status, status_color = "Weak Win Rate", "#f97316"
+        elif z_score >= 1:
+            status, status_color = "Outperforming", "#22c55e"
         else:
-            status, status_color = "Review", "#dc2626"
+            status, status_color = "On Track", "#22c55e"
 
         # Build metrics display
         sharpe_str = f"{rolling_sharpe:.2f}" if rolling_sharpe else "N/A"
         vol_str = f"{realized_vol:.0f}%" if realized_vol else "N/A"
         win_str = f"{win_count}/{total_months}"
-        win_p_str = f"p={win_pvalue:.2f}" if win_pvalue is not None else ""
-        vol_p_str = f"p={vol_pvalue:.2f}" if vol_pvalue is not None else ""
 
         st.markdown(
             f"""<div style='background:linear-gradient(135deg, {status_color}22, {status_color}11);
@@ -183,13 +193,13 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
                 </div>
                 <div style='display:flex; font-size:0.7rem; color:#aaa; text-align:center;'>
                     <div style='flex:1;'>
-                        <b>Returns</b><br>z={z_score:+.1f}
+                        <b>Returns</b><br>z={z_score:+.1f}<br><span style='font-size:0.6rem;'>σ</span>
                     </div>
                     <div style='flex:1;'>
-                        <b>Vol</b><br>{vol_str}<br><span style='font-size:0.6rem;'>{vol_p_str}</span>
+                        <b>Vol</b><br>{vol_str}
                     </div>
                     <div style='flex:1;'>
-                        <b>Win</b><br>{win_str}<br><span style='font-size:0.6rem;'>{win_p_str}</span>
+                        <b>Win</b><br>{win_str}
                     </div>
                     <div style='flex:1;'>
                         <b>Sharpe</b><br>{sharpe_str}
