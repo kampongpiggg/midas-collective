@@ -7,6 +7,8 @@ Fetches daily prices and calculates portfolio value over time.
 import requests
 from datetime import datetime, timedelta
 import json
+import statistics
+import math
 
 
 # Portfolio snapshots from user's trade history
@@ -274,10 +276,9 @@ def generate_equity_curve() -> dict:
 
     # Rolling Sharpe (using available monthly returns, annualized)
     if len(monthly_returns) >= 2:
-        import statistics
         avg_monthly = statistics.mean(monthly_returns)
         std_monthly = statistics.stdev(monthly_returns) if len(monthly_returns) > 1 else 1
-        rolling_sharpe = (avg_monthly / std_monthly) * (12 ** 0.5) if std_monthly > 0 else 0
+        rolling_sharpe = (avg_monthly / std_monthly) * math.sqrt(12) if std_monthly > 0 else 0
     else:
         rolling_sharpe = None
 
@@ -301,7 +302,7 @@ def generate_equity_curve() -> dict:
         # Calculate cumulative return z-score
         n_months = len(monthly_returns)
         expected_cum_return = EXPECTED_MONTHLY_RETURN * n_months
-        expected_cum_std = EXPECTED_MONTHLY_STD * (n_months ** 0.5)
+        expected_cum_std = EXPECTED_MONTHLY_STD * math.sqrt(n_months)
         actual_cum_return = sum(monthly_returns)
         z_score = (actual_cum_return - expected_cum_return) / expected_cum_std if expected_cum_std else 0
     else:

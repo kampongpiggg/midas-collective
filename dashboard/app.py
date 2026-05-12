@@ -55,7 +55,7 @@ def load_cluster_buys() -> list[dict]:
 
 
 @st.cache_data(ttl=3600)
-def load_equity_curve() -> dict:
+def load_equity_curve(_version: int = 2) -> dict:
     """Load equity curve data (cached for 1 hour)."""
     try:
         return generate_equity_curve()
