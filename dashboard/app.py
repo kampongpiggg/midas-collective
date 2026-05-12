@@ -172,6 +172,8 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
             status, status_color = "Max Drawdown Breached", "#dc2626"
         elif z_score < -1 and z_score >= -2 and (win_sig_low or drawdown < -25):
             status, status_color = "Underperforming Backtest", "#dc2626"
+        elif z_score > 1 and vol_sig_high and sharpe_low:
+            status, status_color = "Lucky", "#f97316"
         elif vol_sig_high and sharpe_low:
             status, status_color = "High Volatility", "#f97316"
         elif z_score > 1.5 and sharpe_high:
