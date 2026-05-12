@@ -212,37 +212,50 @@ else:
 st.header("Insider Cluster Buys")
 st.caption("3+ officers/directors buying $200k+ in the last 30 days (via OpenInsider)")
 
-if cluster_buys and len(cluster_buys) > 0 and "value" in cluster_buys[0]:
+if cluster_buys and len(cluster_buys) > 0:
     cluster_df = pd.DataFrame(cluster_buys)
     cluster_df.index = range(1, len(cluster_df) + 1)
     cluster_df.index.name = "#"
 
-    # Format currency columns
-    cluster_df["value_fmt"] = cluster_df["value"].apply(lambda x: f"${x:,.0f}")
-    cluster_df["price_fmt"] = cluster_df["price"].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
-    cluster_df["qty_fmt"] = cluster_df["qty"].apply(lambda x: f"{x:,}")
+    # Handle both old (total_value) and new (value) field names
+    value_col = "value" if "value" in cluster_df.columns else "total_value"
+    price_col = "price" if "price" in cluster_df.columns else "avg_price"
+    date_col = "trade_date" if "trade_date" in cluster_df.columns else "latest_filing"
+
+    if value_col in cluster_df.columns:
+        cluster_df["value_fmt"] = cluster_df[value_col].apply(lambda x: f"${x:,.0f}")
+    else:
+        cluster_df["value_fmt"] = "—"
+
+    if price_col in cluster_df.columns:
+        cluster_df["price_fmt"] = cluster_df[price_col].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
+    else:
+        cluster_df["price_fmt"] = "—"
+
+    if "qty" in cluster_df.columns:
+        cluster_df["qty_fmt"] = cluster_df["qty"].apply(lambda x: f"{x:,}")
+    else:
+        cluster_df["qty_fmt"] = "—"
 
     col_labels = {
         "ticker": "Ticker",
         "company": "Company",
-        "industry": "Industry",
         "insider_count": "Insiders",
-        "trade_date": "Trade Date",
+        date_col: "Date",
         "price_fmt": "Price",
         "qty_fmt": "Shares",
         "value_fmt": "Value",
     }
 
-    display_cols = ["ticker", "company", "insider_count", "trade_date", "price_fmt", "qty_fmt", "value_fmt"]
+    display_cols = ["ticker", "company", "insider_count", date_col, "price_fmt", "qty_fmt", "value_fmt"]
+    # Only include columns that exist
+    display_cols = [c for c in display_cols if c in cluster_df.columns]
+
     st.dataframe(
         cluster_df[display_cols].rename(columns=col_labels),
         use_container_width=True,
         height=min(400, 50 + len(cluster_df) * 35),
     )
-elif cluster_buys:
-    # Data returned but unexpected format
-    st.warning("Cluster buys data format unexpected. Check OpenInsider connection.")
-    st.json(cluster_buys[:2] if len(cluster_buys) > 2 else cluster_buys)
 else:
     st.info("No cluster buys found. OpenInsider may be temporarily unavailable.")
 
