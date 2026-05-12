@@ -138,23 +138,19 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
             [data-testid="stMetricValue"] { font-size: 2.5rem !important; }
             </style>
         """, unsafe_allow_html=True)
-        m1, m2 = st.columns(2)
+        m1, m2, m3 = st.columns(3)
         with m1:
             st.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
         with m2:
             port_ret = ec.get("returns", 0)
             spy_ret = ec.get("spy_returns", 0)
-            alpha_pvalue = ec.get("alpha_pvalue")
             st.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
+        with m3:
+            alpha_pvalue = ec.get("alpha_pvalue")
             if alpha_pvalue is not None:
                 prob_outperform = (1 - alpha_pvalue) * 100
-                if prob_outperform >= 95:
-                    color = "#22c55e"
-                elif prob_outperform >= 75:
-                    color = "#888"
-                else:
-                    color = "#f97316"
-                st.markdown(f"<span style='font-size:0.75rem; color:{color};'>{prob_outperform:.0f}% probability of outperformance</span>", unsafe_allow_html=True)
+                delta_color = "normal" if prob_outperform >= 75 else "inverse"
+                st.metric("P(Outperformance)", f"{prob_outperform:.0f}%")
 
     with right_col:
         # Strategy Health Badge
