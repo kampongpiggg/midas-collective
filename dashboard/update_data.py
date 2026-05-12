@@ -10,6 +10,7 @@ Usage
 
 import argparse
 import json
+import re
 import sys
 import time
 from datetime import datetime, timedelta
@@ -19,6 +20,7 @@ import nest_asyncio
 import numpy as np
 import pandas as pd
 import requests
+from bs4 import BeautifulSoup
 from ib_insync import IB, Stock, util
 from scipy.stats import ttest_1samp
 from tqdm import tqdm
@@ -327,6 +329,177 @@ def fetch_all_fundamentals(
     combined.to_csv(save_path, index=False)
     print(f"  Saved combined fundamentals ({combined.shape}) to {save_path}")
     return combined
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  OpenInsider cluster buys scraper
+# ═══════════════════════════════════════════════════════════════════════════
+
+def fetch_cluster_buys(
+    min_value: int = 200_000,
+    min_insiders: int = 3,
+    days_back: int = 30,
+) -> list[dict]:
+    """
+    Scrape cluster buys from openinsider.com.
+
+    Cluster buys = multiple insiders buying around the same time.
+    Filters for officers/directors with total value >= min_value in last N days.
+
+    Returns list of dicts with keys:
+        ticker, company, industry, insider_count, total_value,
+        latest_filing, avg_price, titles
+    """
+    # OpenInsider screener URL for cluster buys (grouped by ticker)
+    # fd=30 means filed in last 30 days
+    # pl=150 means minimum value $150k (in thousands, so 150 = $150,000)
+    # xa=1, xd=1, xo=1 = include COO, Director, Officer
+    url = (
+        "http://openinsider.com/screener?"
+        f"s=&o=&pl={min_value // 1000}&ph=&ll=&lh=&fd={days_back}&fdr=&td=&tdr="
+        "&fdlyl=&fdlyh=&dtefyl=&dtefyh="
+        "&xa=1&xp=1&xd=1&xo=1"
+        "&vl=&vh=&ocl=&och=&session=&type=&filter=cluster"
+        "&sort=fd&sortdesc=1"
+    )
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Connection": "keep-alive",
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"  WARNING: Failed to fetch OpenInsider: {e}")
+        return []
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Find the main data table
+    table = soup.find("table", {"class": "tinytable"})
+    if not table:
+        print("  WARNING: Could not find data table on OpenInsider")
+        return []
+
+    rows = table.find_all("tr")
+    if len(rows) < 2:
+        print("  No cluster buys found matching criteria")
+        return []
+
+    # Parse header row to find column indices
+    header_row = rows[0]
+    headers_text = [th.get_text(strip=True).lower() for th in header_row.find_all(["th", "td"])]
+
+    # Column mapping (openinsider uses various column names)
+    def find_col(names: list[str]) -> int:
+        for name in names:
+            for i, h in enumerate(headers_text):
+                if name in h:
+                    return i
+        return -1
+
+    col_ticker = find_col(["ticker", "symbol"])
+    col_company = find_col(["company", "name"])
+    col_industry = find_col(["industry", "sector"])
+    col_filing = find_col(["filing", "filed"])
+    col_trade = find_col(["trade date", "trade"])
+    col_insider = find_col(["insider", "name"])
+    col_title = find_col(["title"])
+    col_price = find_col(["price"])
+    col_qty = find_col(["qty", "shares"])
+    col_value = find_col(["value"])
+
+    # Aggregate by ticker for cluster detection
+    ticker_data: dict[str, dict] = {}
+
+    for row in rows[1:]:
+        cells = row.find_all("td")
+        if len(cells) < 5:
+            continue
+
+        def get_cell(idx: int) -> str:
+            if idx < 0 or idx >= len(cells):
+                return ""
+            return cells[idx].get_text(strip=True)
+
+        ticker = get_cell(col_ticker).upper()
+        if not ticker:
+            continue
+
+        company = get_cell(col_company)
+        industry = get_cell(col_industry) if col_industry >= 0 else ""
+        filing_date = get_cell(col_filing)
+        title = get_cell(col_title) if col_title >= 0 else ""
+        price_str = get_cell(col_price) if col_price >= 0 else ""
+        value_str = get_cell(col_value) if col_value >= 0 else ""
+
+        # Parse value (e.g., "$1,234,567" or "+$500,000")
+        value_clean = re.sub(r"[^\d.]", "", value_str)
+        try:
+            value = float(value_clean) if value_clean else 0
+        except ValueError:
+            value = 0
+
+        # Parse price
+        price_clean = re.sub(r"[^\d.]", "", price_str)
+        try:
+            price = float(price_clean) if price_clean else 0
+        except ValueError:
+            price = 0
+
+        # Aggregate by ticker
+        if ticker not in ticker_data:
+            ticker_data[ticker] = {
+                "ticker": ticker,
+                "company": company,
+                "industry": industry,
+                "insider_count": 0,
+                "total_value": 0,
+                "latest_filing": filing_date,
+                "prices": [],
+                "titles": set(),
+            }
+
+        ticker_data[ticker]["insider_count"] += 1
+        ticker_data[ticker]["total_value"] += value
+        if price > 0:
+            ticker_data[ticker]["prices"].append(price)
+        if title:
+            ticker_data[ticker]["titles"].add(title)
+
+        # Update latest filing if newer
+        if filing_date > ticker_data[ticker]["latest_filing"]:
+            ticker_data[ticker]["latest_filing"] = filing_date
+
+    # Filter for actual clusters (2+ insiders) and min value
+    cluster_buys = []
+    for data in ticker_data.values():
+        if data["insider_count"] >= min_insiders and data["total_value"] >= min_value:
+            avg_price = sum(data["prices"]) / len(data["prices"]) if data["prices"] else 0
+            cluster_buys.append({
+                "ticker": data["ticker"],
+                "company": data["company"],
+                "industry": data["industry"],
+                "insider_count": data["insider_count"],
+                "total_value": int(data["total_value"]),
+                "latest_filing": data["latest_filing"],
+                "avg_price": round(avg_price, 2),
+                "titles": ", ".join(sorted(data["titles"])),
+            })
+
+    # Sort by total value descending
+    cluster_buys.sort(key=lambda x: x["total_value"], reverse=True)
+
+    print(f"  Found {len(cluster_buys)} cluster buys ({min_insiders}+ insiders, >=${min_value:,})")
+    return cluster_buys
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -797,42 +970,7 @@ def _extract_current_picks(scored_df: pd.DataFrame) -> tuple[str, list[dict], li
 # ═══════════════════════════════════════════════════════════════════════════
 
 def run_monthly():
-    """Default mode: EDGAR fundamentals + IBKR prices + rescore + update picks."""
-    print("\n=== STEP 1/5: Fetching EDGAR fundamentals ===")
-    fetch_all_fundamentals(SP500_TICKERS)
-
-    print("\n=== STEP 2/5: Fetching IBKR prices ===")
-    t0 = time.time()
-    raw_df = fetch_ohlcv_ibkr(SP500_TICKERS, client_id=IBKR_CLIENT_DATA)
-    print(f"  Price data: {raw_df.shape[0]} rows in {(time.time()-t0)/60:.1f} min")
-
-    print("\n=== STEP 3/5: Building factor table ===")
-    monthly_fund = prepare_monthly_fundamentals()
-    factors_table = build_factor_table(raw_df, monthly_fund)
-    factors_table.to_csv(FULL_FACTORS_CSV, index=True)
-    print(f"  Saved full_factors_table.csv ({factors_table.shape})")
-
-    print("\n=== STEP 4/5: Scoring factors ===")
-    scored = score_factors()
-
-    print("\n=== STEP 5/5: Updating picks in backtest_metrics.json ===")
-    rebal_date_str, holdings, tickers = _extract_current_picks(scored)
-    month_key = rebal_date_str[:7]  # "YYYY-MM"
-
-    metrics = _load_metrics_json()
-    metrics["last_rebalance_date"] = rebal_date_str
-    metrics["current_holdings"] = holdings
-    if "monthly_picks" not in metrics:
-        metrics["monthly_picks"] = {}
-    metrics["monthly_picks"][month_key] = {"date": rebal_date_str, "tickers": tickers}
-    _save_metrics_json(metrics)
-
-    print("\nDone (monthly update).")
-
-
-def run_full():
-    """Full mode: monthly update + full backtest → regenerate metrics."""
-    # First do the monthly update steps
+    """Default mode: EDGAR fundamentals + IBKR prices + rescore + update picks + cluster buys."""
     print("\n=== STEP 1/6: Fetching EDGAR fundamentals ===")
     fetch_all_fundamentals(SP500_TICKERS)
 
@@ -850,7 +988,47 @@ def run_full():
     print("\n=== STEP 4/6: Scoring factors ===")
     scored = score_factors()
 
-    print("\n=== STEP 5/6: Running full backtest ===")
+    print("\n=== STEP 5/6: Fetching OpenInsider cluster buys ===")
+    cluster_buys = fetch_cluster_buys()
+
+    print("\n=== STEP 6/6: Updating picks in backtest_metrics.json ===")
+    rebal_date_str, holdings, tickers = _extract_current_picks(scored)
+    month_key = rebal_date_str[:7]  # "YYYY-MM"
+
+    metrics = _load_metrics_json()
+    metrics["last_rebalance_date"] = rebal_date_str
+    metrics["current_holdings"] = holdings
+    metrics["cluster_buys"] = cluster_buys
+    metrics["cluster_buys_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    if "monthly_picks" not in metrics:
+        metrics["monthly_picks"] = {}
+    metrics["monthly_picks"][month_key] = {"date": rebal_date_str, "tickers": tickers}
+    _save_metrics_json(metrics)
+
+    print("\nDone (monthly update).")
+
+
+def run_full():
+    """Full mode: monthly update + full backtest → regenerate metrics."""
+    # First do the monthly update steps
+    print("\n=== STEP 1/7: Fetching EDGAR fundamentals ===")
+    fetch_all_fundamentals(SP500_TICKERS)
+
+    print("\n=== STEP 2/7: Fetching IBKR prices ===")
+    t0 = time.time()
+    raw_df = fetch_ohlcv_ibkr(SP500_TICKERS, client_id=IBKR_CLIENT_DATA)
+    print(f"  Price data: {raw_df.shape[0]} rows in {(time.time()-t0)/60:.1f} min")
+
+    print("\n=== STEP 3/7: Building factor table ===")
+    monthly_fund = prepare_monthly_fundamentals()
+    factors_table = build_factor_table(raw_df, monthly_fund)
+    factors_table.to_csv(FULL_FACTORS_CSV, index=True)
+    print(f"  Saved full_factors_table.csv ({factors_table.shape})")
+
+    print("\n=== STEP 4/7: Scoring factors ===")
+    scored = score_factors()
+
+    print("\n=== STEP 5/7: Running full backtest ===")
     # Prepare prices_df
     raw_df["date"] = pd.to_datetime(raw_df["date"])
     prices_df = raw_df.sort_values(["ticker", "date"]).copy()
@@ -867,7 +1045,10 @@ def run_full():
     backtest_results = run_long_top_decile_backtest(factors_aligned, prices_df, rebal_dates)
     bt_metrics = compute_portfolio_metrics(backtest_results)
 
-    print("\n=== STEP 6/6: Saving backtest_metrics.json ===")
+    print("\n=== STEP 6/7: Fetching OpenInsider cluster buys ===")
+    cluster_buys = fetch_cluster_buys()
+
+    print("\n=== STEP 7/7: Saving backtest_metrics.json ===")
     rebal_date_str, holdings, tickers = _extract_current_picks(scored)
     month_key = rebal_date_str[:7]
 
@@ -881,6 +1062,8 @@ def run_full():
         **bt_metrics,
         "last_rebalance_date": rebal_date_str,
         "current_holdings": holdings,
+        "cluster_buys": cluster_buys,
+        "cluster_buys_updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "monthly_picks": old_picks,
     }
     metrics["monthly_picks"][month_key] = {"date": rebal_date_str, "tickers": tickers}

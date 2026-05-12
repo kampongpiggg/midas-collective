@@ -14,6 +14,7 @@ import streamlit as st
 import plotly.graph_objects as go
 
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
+from update_data import fetch_cluster_buys
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -33,6 +34,16 @@ def load_metrics() -> dict:
         return json.load(f)
 
 
+@st.cache_data(ttl=900)
+def load_cluster_buys() -> list[dict]:
+    """Fetch cluster buys from OpenInsider (cached for 15 minutes)."""
+    try:
+        return fetch_cluster_buys()
+    except Exception as e:
+        st.warning(f"Failed to fetch cluster buys: {e}")
+        return []
+
+
 def get_scored_factors_mtime() -> datetime | None:
     if SCORED_FACTORS_CSV.exists():
         return datetime.fromtimestamp(os.path.getmtime(SCORED_FACTORS_CSV))
@@ -40,6 +51,7 @@ def get_scored_factors_mtime() -> datetime | None:
 
 
 metrics = load_metrics()
+cluster_buys = load_cluster_buys()
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  Section 1 — Monthly Stock Picks (primary use case)
@@ -181,7 +193,49 @@ else:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 2 — Selection Frequency Heatmap
+#  Section 2 — Insider Cluster Buys
+# ═══════════════════════════════════════════════════════════════════════════
+
+st.header("Insider Cluster Buys")
+st.caption("3+ officers/directors buying $200k+ in the last 30 days (via OpenInsider)")
+
+if cluster_buys:
+    cluster_df = pd.DataFrame(cluster_buys)
+    cluster_df.index = range(1, len(cluster_df) + 1)
+    cluster_df.index.name = "#"
+
+    # Format total_value as currency
+    cluster_df["total_value"] = cluster_df["total_value"].apply(lambda x: f"${x:,.0f}")
+    cluster_df["avg_price"] = cluster_df["avg_price"].apply(lambda x: f"${x:,.2f}" if x > 0 else "—")
+
+    col_labels = {
+        "ticker": "Ticker",
+        "company": "Company",
+        "industry": "Industry",
+        "insider_count": "# Insiders",
+        "total_value": "Total Value",
+        "latest_filing": "Latest Filing",
+        "avg_price": "Avg Price",
+        "titles": "Titles",
+    }
+
+    display_cols = ["ticker", "company", "insider_count", "total_value", "avg_price", "latest_filing"]
+    st.dataframe(
+        cluster_df[display_cols].rename(columns=col_labels),
+        use_container_width=True,
+        height=min(400, 50 + len(cluster_df) * 35),
+    )
+
+    # Expandable details
+    with st.expander("Show insider titles"):
+        for _, row in cluster_df.iterrows():
+            st.markdown(f"**{row['ticker']}**: {row['titles']}")
+else:
+    st.info("No cluster buys found matching criteria (3+ insiders, $200k+ total).")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Section 3 — Selection Frequency Heatmap
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.header("Selection Frequency Heatmap")
@@ -259,7 +313,7 @@ else:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 3 — Data Freshness Bar
+#  Section 4 — Data Freshness Bar
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.header("Data Freshness")
@@ -329,7 +383,7 @@ else:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 4 — Backtest Summary Metrics
+#  Section 5 — Backtest Summary Metrics
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.header("Backtest Summary")
