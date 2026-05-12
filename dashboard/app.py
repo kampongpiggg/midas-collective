@@ -15,6 +15,7 @@ import plotly.graph_objects as go
 
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
 from cluster_buys import fetch_cluster_buys
+from market_sentiment import fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -57,6 +58,24 @@ def load_cluster_buys() -> list[dict]:
     return []
 
 
+@st.cache_data(ttl=300)
+def load_vix() -> dict:
+    """Fetch VIX from Yahoo Finance (cached for 5 minutes)."""
+    try:
+        return fetch_vix()
+    except Exception:
+        return {"value": None, "change": None, "change_pct": None, "status": "N/A"}
+
+
+@st.cache_data(ttl=300)
+def load_fear_greed() -> dict:
+    """Fetch Fear & Greed Index from CNN (cached for 5 minutes)."""
+    try:
+        return fetch_fear_greed()
+    except Exception:
+        return {"value": None, "rating": "N/A", "previous_value": None, "previous_rating": None}
+
+
 def get_scored_factors_mtime() -> datetime | None:
     if SCORED_FACTORS_CSV.exists():
         return datetime.fromtimestamp(os.path.getmtime(SCORED_FACTORS_CSV))
@@ -65,6 +84,8 @@ def get_scored_factors_mtime() -> datetime | None:
 
 metrics = load_metrics()
 cluster_buys = load_cluster_buys()
+vix_data = load_vix()
+fear_greed_data = load_fear_greed()
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  Section 1 — Monthly Stock Picks (primary use case)
@@ -96,6 +117,51 @@ if _tape_holdings:
         </div>""",
         height=78,
     )
+
+# ── Market Sentiment Indicators ─────────────────────────────────────────
+sent_col1, sent_col2, sent_col3 = st.columns([1, 1, 2])
+
+with sent_col1:
+    vix_val = vix_data.get("value")
+    vix_change = vix_data.get("change_pct")
+    vix_status = vix_data.get("status", "N/A")
+    vix_color = get_vix_color(vix_val)
+
+    if vix_val is not None:
+        delta_str = f"{vix_change:+.1f}%" if vix_change else None
+        st.metric("VIX", f"{vix_val:.1f}", delta=delta_str, delta_color="inverse")
+        st.markdown(
+            f"<span style='color:{vix_color};font-weight:bold'>{vix_status}</span>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.metric("VIX", "N/A")
+
+with sent_col2:
+    fg_val = fear_greed_data.get("value")
+    fg_rating = fear_greed_data.get("rating", "N/A")
+    fg_prev = fear_greed_data.get("previous_value")
+    fg_color = get_fear_greed_color(fg_val)
+
+    if fg_val is not None:
+        delta_str = f"{fg_val - fg_prev:+.0f}" if fg_prev else None
+        st.metric("Fear & Greed", f"{fg_val:.0f}", delta=delta_str)
+        st.markdown(
+            f"<span style='color:{fg_color};font-weight:bold'>{fg_rating}</span>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.metric("Fear & Greed", "N/A")
+
+with sent_col3:
+    st.caption("Market Sentiment")
+    st.markdown(
+        "<small>VIX: &lt;15 Low, 15-20 Normal, 20-30 Elevated, &gt;30 High<br>"
+        "F&G: 0-25 Extreme Fear, 25-45 Fear, 45-55 Neutral, 55-75 Greed, 75-100 Extreme Greed</small>",
+        unsafe_allow_html=True,
+    )
+
+st.divider()
 
 rebal_date = metrics.get("last_rebalance_date", "N/A")
 rebal_dt = pd.to_datetime(rebal_date)
