@@ -107,16 +107,6 @@ Streamlit Cloud auto-redeploys when the repo updates, so the dashboard will refl
 
 Once a year (January), run `python update_data.py --full` instead to regenerate the backtest metrics for the new universe.
 
-## Key Configuration (config.py)
-
-| Parameter | Value | Description |
-|---|---|---|
-| `REPORT_LAG_DAYS` | 90 | Days to lag fundamental data (mimics real reporting delay) |
-| `MOM_WINDOW_DAYS` | 126 | ~6 months of trading days for momentum calculation |
-| `TOP_DECILE` | 10 | Select stocks in the 10th (top) decile |
-| `STALE_THRESHOLD_DAYS` | 35 | Dashboard warns if data older than this |
-| `IBKR_PORT` | 7496 | IBKR TWS API port (localhost) |
-
 ## Dependencies
 
 Python 3.10+. Key packages: `streamlit`, `pandas`, `numpy`, `scipy`, `requests`, `plotly`, `ib_insync`, `nest_asyncio`, `beautifulsoup4`.
