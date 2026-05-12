@@ -245,43 +245,19 @@ w_col4, w_col5, w_col6 = st.columns(3)
 with w_col4:
     st.subheader("VIX")
     vix_val = vix_data.get("value")
-    vix_change = vix_data.get("change_pct")
+    vix_change = vix_data.get("change")
     vix_status = vix_data.get("status", "N/A")
     vix_color = get_vix_color(vix_val)
 
     if vix_val is not None:
-        # Create gauge chart for VIX
-        fig_vix = go.Figure(go.Indicator(
-            mode="gauge+number+delta",
-            value=vix_val,
-            delta={"reference": vix_val - (vix_data.get("change") or 0), "relative": False},
-            domain={"x": [0, 1], "y": [0, 1]},
-            title={"text": vix_status, "font": {"size": 20}},
-            gauge={
-                "axis": {"range": [0, 50], "tickwidth": 1, "tickcolor": "white"},
-                "bar": {"color": vix_color},
-                "bgcolor": "rgba(0,0,0,0)",
-                "borderwidth": 0,
-                "steps": [
-                    {"range": [0, 15], "color": "#14532d"},
-                    {"range": [15, 20], "color": "#365314"},
-                    {"range": [20, 30], "color": "#7c2d12"},
-                    {"range": [30, 50], "color": "#450a0a"},
-                ],
-                "threshold": {
-                    "line": {"color": "white", "width": 4},
-                    "thickness": 0.75,
-                    "value": vix_val,
-                },
-            },
-        ))
-        fig_vix.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            font={"color": "white"},
-            height=_widget_height - 50,
-            margin=dict(l=20, r=20, t=50, b=20),
+        st.markdown(
+            f"<div style='text-align:center;padding:40px 0;'>"
+            f"<span style='font-size:5rem;font-weight:bold;color:{vix_color}'>{vix_val:.1f}</span>"
+            f"<br><span style='font-size:1.5rem;color:{vix_color}'>{vix_status}</span>"
+            f"<br><span style='font-size:1rem;color:gray'>{vix_change:+.2f} today</span>"
+            f"</div>",
+            unsafe_allow_html=True,
         )
-        st.plotly_chart(fig_vix, use_container_width=True)
     else:
         st.info("VIX data unavailable")
 
@@ -349,9 +325,11 @@ with w_col6:
             cluster_df[display_cols].rename(columns=col_labels).head(7),
             use_container_width=True,
             hide_index=True,
-            height=_widget_height - 80,
+            height=_widget_height - 100,
         )
-        st.caption("3+ insiders, $200k+ (last 30 days)")
+        st.markdown(
+            "[View full list on OpenInsider](http://openinsider.com/screener?s=&o=&pl=3&ph=&ll=&lh=&fd=30&fdr=&td=0&tdr=&fdlyl=&fdlyh=6&daysago=&xp=1&vl=200&vh=&ocl=1&och=&sic1=-1&sicl=100&sich=9999&isofficer=1&iscob=1&isceo=1&ispres=1&iscoo=1&iscfo=1&isgc=1&isvp=1&isdirector=1&grp=2&nfl=&nfh=&nil=3&nih=&nol=0&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=100&page=1)"
+        )
     else:
         st.info("No cluster buys found")
 
