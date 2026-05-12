@@ -133,6 +133,11 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
     left_col, right_col = st.columns([2, 1])
 
     with left_col:
+        st.markdown("""
+            <style>
+            [data-testid="stMetricValue"] { font-size: 2.5rem !important; }
+            </style>
+        """, unsafe_allow_html=True)
         m1, m2 = st.columns(2)
         with m1:
             st.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
