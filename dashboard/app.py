@@ -201,7 +201,7 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
                 </div>
                 <div style='display:flex; font-size:0.7rem; color:#aaa; text-align:center;'>
                     <div style='flex:1;'>
-                        <b>Returns</b><br>z={z_score:+.1f}<br><span style='font-size:0.6rem;'>σ</span>
+                        <b>Returns</b><br>{z_score:+.1f}σ
                     </div>
                     <div style='flex:1;'>
                         <b>Vol</b><br>{vol_str}
