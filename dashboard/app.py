@@ -292,19 +292,44 @@ if holdings:
 
     display_cols = ["ticker", "sector", "alpha_score",
                     "value_score", "quality_score", "momentum_score"]
-    col_labels = {
-        "ticker": "Ticker",
-        "sector": "Sector",
-        "alpha_score": "Alpha",
-        "value_score": "Value",
-        "quality_score": "Quality",
-        "momentum_score": "Momentum",
+
+    # Configure columns with centered alignment and formatting
+    column_config = {
+        "ticker": st.column_config.TextColumn("Ticker", width="small"),
+        "sector": st.column_config.TextColumn("Sector", width="medium"),
+        "alpha_score": st.column_config.ProgressColumn(
+            "Alpha",
+            format="%.2f",
+            min_value=-3,
+            max_value=3,
+            width="small",
+        ),
+        "value_score": st.column_config.NumberColumn(
+            "Value",
+            format="%.2f",
+            width="small",
+        ),
+        "quality_score": st.column_config.NumberColumn(
+            "Quality",
+            format="%.2f",
+            width="small",
+        ),
+        "momentum_score": st.column_config.NumberColumn(
+            "Momentum",
+            format="%.2f",
+            width="small",
+        ),
     }
-    st.dataframe(
-        picks_df[display_cols].rename(columns=col_labels),
-        use_container_width=True,
-        height=400,
-    )
+
+    # Center the table using columns
+    _, center_col, _ = st.columns([1, 3, 1])
+    with center_col:
+        st.dataframe(
+            picks_df[display_cols],
+            column_config=column_config,
+            use_container_width=True,
+            hide_index=False,
+        )
 else:
     st.warning("No holdings data found. Run `python update_data.py`.")
 
@@ -396,15 +421,19 @@ with w_col4:
     st.subheader("VIX")
     vix_val = vix_data.get("value")
     vix_change = vix_data.get("change")
+    vix_change_pct = vix_data.get("change_pct")
     vix_status = vix_data.get("status", "N/A")
     vix_color = get_vix_color(vix_val)
 
     if vix_val is not None:
+        # Format change with both absolute and percentage
+        change_str = f"{vix_change:+.2f}" if vix_change is not None else "—"
+        pct_str = f"({vix_change_pct:+.1f}%)" if vix_change_pct is not None else ""
         st.markdown(
             f"<div style='text-align:center;padding:40px 0;'>"
             f"<span style='font-size:5rem;font-weight:bold;color:{vix_color}'>{vix_val:.1f}</span>"
             f"<br><span style='font-size:1.5rem;color:{vix_color}'>{vix_status}</span>"
-            f"<br><span style='font-size:1rem;color:gray'>{vix_change:+.2f} today</span>"
+            f"<br><span style='font-size:1rem;color:gray'>{change_str} {pct_str} today</span>"
             f"</div>",
             unsafe_allow_html=True,
         )
