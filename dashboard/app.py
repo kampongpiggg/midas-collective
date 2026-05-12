@@ -164,19 +164,16 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         vol_sig_high = vol_pvalue is not None and vol_pvalue < 0.05 and realized_vol and realized_vol > expected_vol
         win_sig_low = win_pvalue is not None and win_pvalue < 0.05
         sharpe_low = rolling_sharpe is not None and rolling_sharpe < 0.7
+        sharpe_high = rolling_sharpe is not None and rolling_sharpe > expected_sharpe
 
-        if z_score < -2 or (win_sig_low and vol_sig_high):
-            status, status_color = "Review Thesis", "#dc2626"
-        elif drawdown < -25:
-            status, status_color = "High Risk", "#dc2626"
-        elif z_score < -1.5:
-            status, status_color = "Underperforming", "#f97316"
+        if z_score < -2:
+            status, status_color = "Review Thesis", "#000000"
+        elif z_score < -1 and z_score >= -1.5 and win_sig_low and drawdown < -25:
+            status, status_color = "Underperforming Backtest", "#dc2626"
         elif vol_sig_high and sharpe_low:
             status, status_color = "High Volatility", "#f97316"
-        elif win_sig_low:
-            status, status_color = "Weak Win Rate", "#f97316"
-        elif z_score >= 1:
-            status, status_color = "Outperforming", "#22c55e"
+        elif z_score > 1.5 and sharpe_high:
+            status, status_color = "Outperforming Backtest", "#22c55e"
         else:
             status, status_color = "On Track", "#22c55e"
 
