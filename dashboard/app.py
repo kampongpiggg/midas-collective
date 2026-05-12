@@ -15,6 +15,7 @@ import plotly.graph_objects as go
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
 from cluster_buys import fetch_cluster_buys
 from market_sentiment import fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color
+from equity_curve import generate_equity_curve
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -53,6 +54,16 @@ def load_cluster_buys() -> list[dict]:
     return []
 
 
+@st.cache_data(ttl=3600)
+def load_equity_curve() -> dict:
+    """Load equity curve data (cached for 1 hour)."""
+    try:
+        return generate_equity_curve()
+    except Exception as e:
+        print(f"Failed to generate equity curve: {e}")
+        return {"dates": [], "portfolio_values": [], "spy_values": [], "returns": 0, "spy_returns": 0}
+
+
 @st.cache_data(ttl=300)
 def load_vix() -> dict:
     try:
@@ -79,6 +90,7 @@ metrics = load_metrics()
 cluster_buys = load_cluster_buys()
 vix_data = load_vix()
 fear_greed_data = load_fear_greed()
+equity_curve = load_equity_curve()
 
 # ── Title ──────────────────────────────────────────────────────────────────
 st.title("The Midas Collective")
@@ -106,10 +118,70 @@ if _tape_holdings:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 1 — Expected Portfolio Performance
+#  Section 1 — Portfolio Performance
 # ═══════════════════════════════════════════════════════════════════════════
 
-st.header("Expected Portfolio Performance")
+st.header("Portfolio Performance")
+
+# ── Current Performance ───────────────────────────────────────────────────
+st.subheader("Current Performance")
+
+if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
+    ec = equity_curve
+    capital_inj = ec.get("capital_injections", 0)
+
+    ec1, ec2, ec3, ec4, ec5 = st.columns(5)
+    ec1.metric("Starting Value", f"${ec.get('initial_value', 0):,.0f}")
+    ec2.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
+
+    if capital_inj > 0:
+        ec3.metric("Leverage Added", f"${capital_inj:,.0f}")
+
+    port_ret = ec.get("returns", 0)
+    spy_ret = ec.get("spy_returns", 0)
+    ec4.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
+    ec5.metric("SPY Return", f"{spy_ret:+.1f}%")
+
+    # Equity curve chart
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=ec["dates"],
+        y=ec["portfolio_values"],
+        name="Portfolio",
+        line=dict(color="#22c55e", width=2),
+        hovertemplate="<b>Portfolio</b><br>%{x}<br>$%{y:,.0f}<extra></extra>",
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=ec["dates"],
+        y=ec["spy_values"],
+        name="SPY (Benchmark)",
+        line=dict(color="#6b7280", width=2, dash="dot"),
+        hovertemplate="<b>SPY</b><br>%{x}<br>$%{y:,.0f}<extra></extra>",
+    ))
+
+    fig.update_layout(
+        title=None,
+        xaxis_title=None,
+        yaxis_title="Portfolio Value ($)",
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        height=400,
+        margin=dict(l=20, r=20, t=40, b=20),
+        yaxis=dict(tickformat="$,.0f"),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    start_date = ec["dates"][0] if ec["dates"] else "?"
+    end_date = ec["dates"][-1] if ec["dates"] else "?"
+    st.caption(f"Live tracking: {start_date} — {end_date}")
+else:
+    st.info("No equity curve data available yet.")
+
+# ── Expected Performance ──────────────────────────────────────────────────
+st.subheader("Expected Performance")
 
 m = metrics
 c1, c2, c3, c4, c5 = st.columns(5)
@@ -162,8 +234,10 @@ else:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Section 3 — Market Widgets Row
+#  Section 3 — Market Pulse
 # ═══════════════════════════════════════════════════════════════════════════
+
+st.header("Market Pulse")
 
 _widget_height = 400
 
@@ -239,7 +313,7 @@ with w_col3:
         height=_widget_height,
     )
 
-# Row 2: VIX Chart, Fear & Greed Gauge, Cluster Buys
+# Row 2: VIX, Fear & Greed Gauge, Cluster Buys
 w_col4, w_col5, w_col6 = st.columns(3)
 
 with w_col4:
