@@ -234,6 +234,82 @@ def generate_equity_curve() -> dict:
     portfolio_return = (adjusted_gain / initial_portfolio_value) * 100 if initial_portfolio_value else 0
     spy_return = ((final_spy / initial_portfolio_value) - 1) * 100 if initial_portfolio_value else 0
 
+    # ── Calculate monitoring metrics ──────────────────────────────────────────
+
+    # Monthly returns (end-of-month values, adjusted for capital injections)
+    monthly_returns = []
+    monthly_dates = []
+    injection_dates = {inj["date"]: inj["amount"] for inj in CAPITAL_INJECTIONS}
+
+    prev_value = portfolio_values[0]
+    prev_month = all_dates[0][:7]
+    cumulative_injection = 0
+
+    for i, date in enumerate(all_dates):
+        curr_month = date[:7]
+        if curr_month != prev_month:
+            # End of month - calculate return
+            if date in injection_dates:
+                cumulative_injection += injection_dates[date]
+            # Adjust for any injection that happened this month
+            adj_prev = prev_value
+            adj_curr = portfolio_values[i - 1]
+            if prev_month >= "2026-05":  # After injection month
+                adj_curr = portfolio_values[i - 1] - cumulative_injection
+            monthly_ret = ((adj_curr / adj_prev) - 1) * 100 if adj_prev else 0
+            monthly_returns.append(monthly_ret)
+            monthly_dates.append(prev_month)
+            prev_value = portfolio_values[i - 1]
+            prev_month = curr_month
+
+    # Current drawdown
+    peak = portfolio_values[0]
+    current_drawdown = 0
+    for val in portfolio_values:
+        if val > peak:
+            peak = val
+        dd = (val - peak) / peak * 100 if peak else 0
+        current_drawdown = dd
+    current_drawdown = round(current_drawdown, 2)
+
+    # Rolling Sharpe (using available monthly returns, annualized)
+    if len(monthly_returns) >= 2:
+        import statistics
+        avg_monthly = statistics.mean(monthly_returns)
+        std_monthly = statistics.stdev(monthly_returns) if len(monthly_returns) > 1 else 1
+        rolling_sharpe = (avg_monthly / std_monthly) * (12 ** 0.5) if std_monthly > 0 else 0
+    else:
+        rolling_sharpe = None
+
+    # Win rate
+    if monthly_returns:
+        wins = sum(1 for r in monthly_returns if r > 0)
+        win_rate = wins / len(monthly_returns) * 100
+        win_count = wins
+        total_months = len(monthly_returns)
+    else:
+        win_rate = None
+        win_count = 0
+        total_months = 0
+
+    # Thesis health check: Z-score vs expected returns
+    # Backtest: 27.4% annual = 2.28% monthly, 22.2% annual vol = 6.41% monthly std
+    EXPECTED_MONTHLY_RETURN = 2.28
+    EXPECTED_MONTHLY_STD = 6.41
+
+    if monthly_returns:
+        # Calculate cumulative return z-score
+        n_months = len(monthly_returns)
+        expected_cum_return = EXPECTED_MONTHLY_RETURN * n_months
+        expected_cum_std = EXPECTED_MONTHLY_STD * (n_months ** 0.5)
+        actual_cum_return = sum(monthly_returns)
+        z_score = (actual_cum_return - expected_cum_return) / expected_cum_std if expected_cum_std else 0
+    else:
+        z_score = 0
+        n_months = 0
+        expected_cum_return = 0
+        actual_cum_return = 0
+
     return {
         "dates": all_dates,
         "portfolio_values": portfolio_values,
@@ -243,6 +319,14 @@ def generate_equity_curve() -> dict:
         "initial_value": round(initial_portfolio_value, 2),
         "final_value": round(final_portfolio, 2),
         "capital_injections": total_injections,
+        # Monitoring metrics
+        "current_drawdown": current_drawdown,
+        "rolling_sharpe": round(rolling_sharpe, 2) if rolling_sharpe is not None else None,
+        "win_rate": round(win_rate, 1) if win_rate is not None else None,
+        "win_count": win_count,
+        "total_months": total_months,
+        "z_score": round(z_score, 2),
+        "monthly_returns": [round(r, 2) for r in monthly_returns],
     }
 
 

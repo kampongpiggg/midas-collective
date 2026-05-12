@@ -128,19 +128,54 @@ st.subheader("Current Performance")
 
 if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
     ec = equity_curve
-    capital_inj = ec.get("capital_injections", 0)
 
-    ec1, ec2, ec3, ec4, ec5 = st.columns(5)
-    ec1.metric("Starting Value", f"${ec.get('initial_value', 0):,.0f}")
-    ec2.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
+    # Main metrics row
+    ec1, ec2 = st.columns(2)
 
-    if capital_inj > 0:
-        ec3.metric("Leverage Added", f"${capital_inj:,.0f}")
+    with ec1:
+        st.metric("Current Value", f"${ec.get('final_value', 0):,.0f}")
+        # Monitoring stats below
+        drawdown = ec.get("current_drawdown", 0)
+        dd_color = "#22c55e" if drawdown > -10 else "#f97316" if drawdown > -25 else "#dc2626"
+        rolling_sharpe = ec.get("rolling_sharpe")
+        sharpe_str = f"{rolling_sharpe:.2f}" if rolling_sharpe is not None else "N/A"
+        sharpe_color = "#22c55e" if rolling_sharpe and rolling_sharpe > 0.8 else "#f97316" if rolling_sharpe and rolling_sharpe > 0.3 else "#dc2626"
+        st.markdown(
+            f"<span style='font-size:0.85rem;color:gray'>Drawdown: </span>"
+            f"<span style='font-size:0.85rem;color:{dd_color}'>{drawdown:+.1f}%</span>"
+            f"<span style='font-size:0.85rem;color:gray'> · Sharpe: </span>"
+            f"<span style='font-size:0.85rem;color:{sharpe_color}'>{sharpe_str}</span>",
+            unsafe_allow_html=True,
+        )
 
-    port_ret = ec.get("returns", 0)
-    spy_ret = ec.get("spy_returns", 0)
-    ec4.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
-    ec5.metric("SPY Return", f"{spy_ret:+.1f}%")
+    with ec2:
+        port_ret = ec.get("returns", 0)
+        spy_ret = ec.get("spy_returns", 0)
+        st.metric("Portfolio Return", f"{port_ret:+.1f}%", delta=f"{port_ret - spy_ret:+.1f}% vs SPY")
+        # Win rate and thesis health
+        win_count = ec.get("win_count", 0)
+        total_months = ec.get("total_months", 0)
+        win_rate = ec.get("win_rate")
+        z_score = ec.get("z_score", 0)
+
+        win_str = f"{win_count}/{total_months}" if total_months else "N/A"
+        win_color = "#22c55e" if win_rate and win_rate >= 60 else "#f97316" if win_rate and win_rate >= 40 else "#dc2626"
+
+        # Z-score interpretation: < -2 is concerning
+        if z_score >= -1:
+            z_status, z_color = "On Track", "#22c55e"
+        elif z_score >= -2:
+            z_status, z_color = "Monitor", "#f97316"
+        else:
+            z_status, z_color = "Review Thesis", "#dc2626"
+
+        st.markdown(
+            f"<span style='font-size:0.85rem;color:gray'>Win Rate: </span>"
+            f"<span style='font-size:0.85rem;color:{win_color}'>{win_str}</span>"
+            f"<span style='font-size:0.85rem;color:gray'> · Thesis: </span>"
+            f"<span style='font-size:0.85rem;color:{z_color}'>{z_status} (z={z_score:+.1f})</span>",
+            unsafe_allow_html=True,
+        )
 
     # Equity curve chart
     fig = go.Figure()
