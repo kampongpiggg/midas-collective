@@ -95,11 +95,32 @@ SNAPSHOTS = [
             "INTC": 44,
         },
     },
+    {
+        "date": "2026-06-08",
+        "cash": 270,
+        "holdings": {
+            "NVDA": 26,
+            "V": 17,
+            "INTC": 51,
+            "MCD": 20,
+            "ORCL": 26,
+            "MU": 6,
+            "ABBV": 25,
+            "CVX": 30,
+            "MSFT": 14,
+            "MO": 80,
+        },
+    },
 ]
 
 # Total capital injections (for accurate return calculation)
 CAPITAL_INJECTIONS = [
     {"date": "2026-05-11", "amount": 9750},  # Box spread leverage
+]
+
+# Outstanding liabilities, subtracted from gross portfolio value to give NLV
+LIABILITIES = [
+    {"date": "2026-05-11", "amount": 9750},  # Box spread loan
 ]
 
 
@@ -218,6 +239,18 @@ def generate_equity_curve() -> dict:
 
         portfolio_values.append(round(daily_value, 2))
 
+    # Subtract cumulative liabilities to get NLV (Net Liquidation Value)
+    sorted_liabs = sorted(LIABILITIES, key=lambda l: l["date"])
+    cumulative_liab = 0
+    liab_idx = 0
+    nlv_values = []
+    for i, date in enumerate(all_dates):
+        while liab_idx < len(sorted_liabs) and sorted_liabs[liab_idx]["date"] <= date:
+            cumulative_liab += sorted_liabs[liab_idx]["amount"]
+            liab_idx += 1
+        nlv_values.append(round(portfolio_values[i] - cumulative_liab, 2))
+    portfolio_values = nlv_values
+
     # Calculate total capital injections
     total_injections = sum(inj["amount"] for inj in CAPITAL_INJECTIONS)
 
@@ -228,43 +261,30 @@ def generate_equity_curve() -> dict:
 
     spy_values = [round(spy_prices.get(date, 0) * spy_multiplier, 2) for date in all_dates]
 
-    # Calculate returns (adjusted for capital injections)
+    # NLV already excludes outstanding loans, so return is the direct equity gain
     final_portfolio = portfolio_values[-1] if portfolio_values else 0
     final_spy = spy_values[-1] if spy_values else 0
 
-    # Investment return = (Final Value - Capital Injections - Initial Value) / Initial Value
-    adjusted_gain = final_portfolio - total_injections - initial_portfolio_value
-    portfolio_return = (adjusted_gain / initial_portfolio_value) * 100 if initial_portfolio_value else 0
+    portfolio_return = ((final_portfolio / initial_portfolio_value) - 1) * 100 if initial_portfolio_value else 0
     spy_return = ((final_spy / initial_portfolio_value) - 1) * 100 if initial_portfolio_value else 0
 
     # ── Calculate monitoring metrics ──────────────────────────────────────────
 
-    # Monthly returns (end-of-month values, adjusted for capital injections)
+    # Monthly returns (end-of-month NLV deltas)
     monthly_returns = []
     monthly_dates = []
-    injection_dates = {inj["date"]: inj["amount"] for inj in CAPITAL_INJECTIONS}
+    monthly_spy_returns = []
 
     prev_value = portfolio_values[0]
     prev_spy_value = spy_values[0]
     prev_month = all_dates[0][:7]
-    cumulative_injection = 0
-    monthly_spy_returns = []
 
     for i, date in enumerate(all_dates):
         curr_month = date[:7]
         if curr_month != prev_month:
-            # End of month - calculate return
-            if date in injection_dates:
-                cumulative_injection += injection_dates[date]
-            # Adjust for any injection that happened this month
-            adj_prev = prev_value
-            adj_curr = portfolio_values[i - 1]
-            if prev_month >= "2026-05":  # After injection month
-                adj_curr = portfolio_values[i - 1] - cumulative_injection
-            monthly_ret = ((adj_curr / adj_prev) - 1) * 100 if adj_prev else 0
+            monthly_ret = ((portfolio_values[i - 1] / prev_value) - 1) * 100 if prev_value else 0
             monthly_returns.append(monthly_ret)
             monthly_dates.append(prev_month)
-            # SPY monthly return
             spy_ret = ((spy_values[i - 1] / prev_spy_value) - 1) * 100 if prev_spy_value else 0
             monthly_spy_returns.append(spy_ret)
             prev_value = portfolio_values[i - 1]
