@@ -607,9 +607,7 @@ with w_col6:
 # Row 3: 0DTE strangle-selling signals — traffic light, SPX net GEX, VIX1D + term
 st.subheader("0DTE SPY Strangle Signals")
 st.caption(
-    "Can I sell a 0DTE SPY strangle right now? SPX dealer gamma + intraday "
-    "volatility. SPX GEX is ~15-min delayed (CBOE). Always check the Calendar "
-    "for macro events before selling into a number."
+    "SPX dealer gamma + intraday volatility. SPX GEX is ~ 15min delayed."
 )
 
 w_col7, w_col8, w_col9 = st.columns(3)
