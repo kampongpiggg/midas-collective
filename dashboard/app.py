@@ -14,7 +14,10 @@ import plotly.graph_objects as go
 
 from config import BACKTEST_METRICS_JSON, SCORED_FACTORS_CSV, SP500_TICKERS, STALE_THRESHOLD_DAYS
 from cluster_buys import fetch_cluster_buys
-from market_sentiment import fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color
+from market_sentiment import (
+    fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color,
+    fetch_vix1d, fetch_vix_term_structure, fetch_net_gex, compute_strangle_signal,
+)
 from equity_curve import generate_equity_curve, fetch_daily_prices
 
 # ── Page config ────────────────────────────────────────────────────────────
@@ -80,6 +83,31 @@ def load_fear_greed() -> dict:
         return {"value": None, "rating": "N/A", "previous_value": None, "previous_rating": None}
 
 
+@st.cache_data(ttl=300)
+def load_vix1d() -> dict:
+    try:
+        return fetch_vix1d()
+    except Exception:
+        return {"value": None, "change": None, "change_pct": None, "status": "N/A", "color": "gray"}
+
+
+@st.cache_data(ttl=300)
+def load_vix_term_structure() -> dict:
+    try:
+        return fetch_vix_term_structure()
+    except Exception:
+        return {"vix1d": None, "vix9d": None, "vix": None, "ratio": None, "shape": "N/A", "color": "gray"}
+
+
+@st.cache_data(ttl=300)
+def load_net_gex() -> dict:
+    try:
+        return fetch_net_gex()
+    except Exception:
+        return {"net_gex": None, "regime": "N/A", "color": "gray", "spot": None,
+                "call_wall": None, "put_wall": None, "within_walls": None, "front_expiry": None}
+
+
 def get_scored_factors_mtime() -> datetime | None:
     if SCORED_FACTORS_CSV.exists():
         return datetime.fromtimestamp(os.path.getmtime(SCORED_FACTORS_CSV))
@@ -90,6 +118,10 @@ metrics = load_metrics()
 cluster_buys = load_cluster_buys()
 vix_data = load_vix()
 fear_greed_data = load_fear_greed()
+vix1d_data = load_vix1d()
+term_data = load_vix_term_structure()
+gex_data = load_net_gex()
+strangle_signal = compute_strangle_signal(gex_data, vix1d_data, term_data)
 equity_curve = load_equity_curve()
 
 # ── Title ──────────────────────────────────────────────────────────────────
@@ -571,6 +603,92 @@ with w_col6:
         )
     else:
         st.info("No cluster buys found")
+
+# Row 3: 0DTE strangle-selling signals — traffic light, SPX net GEX, VIX1D + term
+st.subheader("0DTE SPY Strangle Signals")
+st.caption(
+    "Can I sell a 0DTE SPY strangle right now? SPX dealer gamma + intraday "
+    "volatility. SPX GEX is ~15-min delayed (CBOE). Always check the Calendar "
+    "for macro events before selling into a number."
+)
+
+w_col7, w_col8, w_col9 = st.columns(3)
+
+with w_col7:
+    st.markdown("**Traffic Light**")
+    light = strangle_signal.get("light", "N/A")
+    light_color = strangle_signal.get("color", "gray")
+    light_emoji = {"GREEN": "🟢", "YELLOW": "🟡", "RED": "🔴"}.get(light, "⚪")
+    light_label = {"GREEN": "SELL", "YELLOW": "CAUTION", "RED": "STAND DOWN"}.get(light, "N/A")
+    st.markdown(
+        f"<div style='text-align:center;padding:20px 0;'>"
+        f"<span style='font-size:4rem;'>{light_emoji}</span>"
+        f"<br><span style='font-size:2rem;font-weight:bold;color:{light_color}'>{light_label}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+    for reason in strangle_signal.get("reasons", []):
+        st.markdown(f"<span style='font-size:0.85rem;color:gray'>• {reason}</span>", unsafe_allow_html=True)
+
+with w_col8:
+    st.markdown("**SPX Net GEX**")
+    net_gex = gex_data.get("net_gex")
+    if net_gex is not None:
+        gex_color = gex_data.get("color", "gray")
+        spot = gex_data.get("spot")
+        call_wall = gex_data.get("call_wall")
+        put_wall = gex_data.get("put_wall")
+        within = gex_data.get("within_walls")
+        front = gex_data.get("front_expiry")
+        within_str = (
+            "<span style='color:#22c55e'>inside walls</span>" if within
+            else "<span style='color:#dc2626'>outside walls</span>" if within is False
+            else "—"
+        )
+        st.markdown(
+            f"<div style='text-align:center;padding:10px 0;'>"
+            f"<span style='font-size:3rem;font-weight:bold;color:{gex_color}'>{net_gex/1e9:+.1f}B</span>"
+            f"<br><span style='font-size:1.1rem;color:{gex_color}'>{gex_data.get('regime')}</span>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f"<div style='font-size:0.9rem;color:gray'>"
+            f"Spot {spot:,.0f} &nbsp; ({within_str})<br>"
+            f"Call wall <b>{call_wall:,.0f}</b> &nbsp; Put wall <b>{put_wall:,.0f}</b><br>"
+            f"Front expiry {front}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.info("GEX data unavailable")
+
+with w_col9:
+    st.markdown("**Intraday VIX1D & Term Structure**")
+    v1d = vix1d_data.get("value")
+    if v1d is not None:
+        v1d_color = vix1d_data.get("color", "gray")
+        v1d_status = vix1d_data.get("status", "N/A")
+        term_color = term_data.get("color", "gray")
+        term_shape = term_data.get("shape", "N/A")
+        vix9d = term_data.get("vix9d")
+        vix30 = term_data.get("vix")
+        st.markdown(
+            f"<div style='text-align:center;padding:10px 0;'>"
+            f"<span style='font-size:3rem;font-weight:bold;color:{v1d_color}'>{v1d:.1f}</span>"
+            f"<br><span style='font-size:1.1rem;color:{v1d_color}'>VIX1D · {v1d_status}</span>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f"<div style='font-size:0.9rem;color:gray'>"
+            f"Term: <span style='color:{term_color}'><b>{term_shape}</b></span><br>"
+            f"VIX1D {v1d:.1f} → VIX9D {vix9d:.1f} → VIX {vix30:.1f}"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.info("VIX1D data unavailable")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
