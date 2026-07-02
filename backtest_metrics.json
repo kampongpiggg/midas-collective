@@ -8,97 +8,97 @@
   "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-06-05",
+  "last_rebalance_date": "2026-07-01",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 1.558,
-      "value_score": 0.026,
-      "quality_score": -0.105,
-      "momentum_score": 4.754
-    },
-    {
-      "ticker": "INTC",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.868,
-      "value_score": 1.894,
-      "quality_score": -1.496,
-      "momentum_score": 2.204
+      "alpha_score": 1.457,
+      "value_score": 0.023,
+      "quality_score": -0.24,
+      "momentum_score": 4.586
     },
     {
       "ticker": "MU",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.812,
-      "value_score": -0.179,
-      "quality_score": 0.424,
-      "momentum_score": 2.189
+      "alpha_score": 1.109,
+      "value_score": 0.058,
+      "quality_score": 1.138,
+      "momentum_score": 2.13
+    },
+    {
+      "ticker": "INTC",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.855,
+      "value_score": 1.618,
+      "quality_score": -1.534,
+      "momentum_score": 2.482
+    },
+    {
+      "ticker": "KLAC",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.706,
+      "value_score": -0.232,
+      "quality_score": 1.346,
+      "momentum_score": 1.004
     },
     {
       "ticker": "MCD",
       "sector": "Consumer Cyclical",
       "weight": 0.1,
-      "alpha_score": 0.68,
-      "value_score": 0.137,
+      "alpha_score": 0.651,
+      "value_score": 0.134,
       "quality_score": 2.297,
-      "momentum_score": -0.395
+      "momentum_score": -0.478
     },
     {
       "ticker": "CVX",
       "sector": "Energy",
       "weight": 0.1,
-      "alpha_score": 0.645,
-      "value_score": 0.824,
-      "quality_score": 1.158,
-      "momentum_score": -0.046
-    },
-    {
-      "ticker": "MO",
-      "sector": "Consumer Defensive",
-      "weight": 0.1,
-      "alpha_score": 0.6,
-      "value_score": 0.615,
-      "quality_score": 1.002,
-      "momentum_score": 0.184
+      "alpha_score": 0.556,
+      "value_score": 1.0,
+      "quality_score": 1.0,
+      "momentum_score": -0.332
     },
     {
       "ticker": "V",
       "sector": "Financial Services",
       "weight": 0.1,
-      "alpha_score": 0.488,
+      "alpha_score": 0.536,
       "value_score": 0.558,
       "quality_score": 1.009,
-      "momentum_score": -0.104
+      "momentum_score": 0.042
+    },
+    {
+      "ticker": "MO",
+      "sector": "Consumer Defensive",
+      "weight": 0.1,
+      "alpha_score": 0.508,
+      "value_score": 0.638,
+      "quality_score": 1.002,
+      "momentum_score": -0.115
     },
     {
       "ticker": "ABBV",
       "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.456,
-      "value_score": 0.456,
-      "quality_score": 1.004,
-      "momentum_score": -0.092
+      "alpha_score": 0.472,
+      "value_score": 0.401,
+      "quality_score": 1.003,
+      "momentum_score": 0.012
     },
     {
-      "ticker": "ORCL",
-      "sector": "Technology",
+      "ticker": "JNJ",
+      "sector": "Healthcare",
       "weight": 0.1,
-      "alpha_score": 0.428,
-      "value_score": 0.054,
-      "quality_score": 0.764,
-      "momentum_score": 0.465
-    },
-    {
-      "ticker": "MSFT",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.409,
-      "value_score": 0.483,
-      "quality_score": 0.903,
-      "momentum_score": -0.159
+      "alpha_score": 0.362,
+      "value_score": 0.353,
+      "quality_score": 0.857,
+      "momentum_score": -0.124
     }
   ],
   "monthly_picks": {
@@ -191,163 +191,123 @@
         "ORCL",
         "MSFT"
       ]
+    },
+    "2026-07": {
+      "date": "2026-07-01",
+      "tickers": [
+        "NVDA",
+        "MU",
+        "INTC",
+        "KLAC",
+        "MCD",
+        "CVX",
+        "V",
+        "MO",
+        "ABBV",
+        "JNJ"
+      ]
     }
   },
   "cluster_buys": [
     {
-      "ticker": "NCLH",
-      "company": "Norwegian Cruise Line Holdings Ltd.",
-      "industry": "Water Transportation",
-      "insider_count": 6,
-      "trade_date": "2026-06-01",
-      "filing_date": "2026-06-03 16:15:15",
-      "price": 17.85,
-      "qty": 1622467,
-      "value": 28966654
-    },
-    {
-      "ticker": "MOBI",
-      "company": "Mobia Medical, Inc.",
-      "industry": "Surgical & Medical Instruments & Apparatus",
+      "ticker": "SMMT",
+      "company": "Summit Therapeutics Inc.",
+      "industry": "Pharmaceutical Preparations",
       "insider_count": 3,
-      "trade_date": "2026-05-11",
-      "filing_date": "2026-05-11 21:58:21",
-      "price": 15.0,
-      "qty": 724999,
-      "value": 10874985
+      "trade_date": "2026-06-04",
+      "filing_date": "2026-06-12 14:35:11",
+      "price": 13.13,
+      "qty": 7670000,
+      "value": 100696650
     },
     {
-      "ticker": "EROK",
-      "company": "Eaglerock Land, LLC",
-      "industry": "Oil Royalty Traders",
+      "ticker": "DPC",
+      "company": "Dpc Holdings Ltd",
+      "industry": "Nonferrous Foundries (Castings)",
+      "insider_count": 8,
+      "trade_date": "2026-06-26",
+      "filing_date": "2026-06-26 16:09:54",
+      "price": 33.0,
+      "qty": 2293837,
+      "value": 75696621
+    },
+    {
+      "ticker": "QNT",
+      "company": "Quantinuum Inc.",
+      "industry": "Computer Integrated Systems Design",
+      "insider_count": 10,
+      "trade_date": "2026-06-05",
+      "filing_date": "2026-06-08 16:31:52",
+      "price": 60.0,
+      "qty": 410832,
+      "value": 24649920
+    },
+    {
+      "ticker": "INIO",
+      "company": "Innio N.V.",
+      "industry": "Motors & Generators",
       "insider_count": 3,
-      "trade_date": "2026-05-15",
-      "filing_date": "2026-05-19 18:41:38",
-      "price": 18.5,
-      "qty": 513513,
-      "value": 9499991
+      "trade_date": "2026-06-05",
+      "filing_date": "2026-06-08 16:00:32",
+      "price": 27.0,
+      "qty": 166666,
+      "value": 4499982
     },
     {
-      "ticker": "NOMD",
-      "company": "Nomad Foods Ltd",
-      "industry": "Food & Kindred Products",
+      "ticker": "RYAN",
+      "company": "Ryan Specialty Holdings, Inc.",
+      "industry": "Insurance Agents, Brokers & Service",
       "insider_count": 3,
-      "trade_date": "2026-05-15",
-      "filing_date": "2026-05-18 16:27:14",
-      "price": 9.49,
-      "qty": 950000,
-      "value": 9013960
+      "trade_date": "2026-06-03",
+      "filing_date": "2026-06-11 17:57:48",
+      "price": 32.61,
+      "qty": 133800,
+      "value": 4363761
     },
     {
-      "ticker": "ONON",
-      "company": "On Holding AG",
-      "industry": "Rubber & Plastics Footwear",
+      "ticker": "LILA",
+      "company": "Liberty Latin America Ltd.",
+      "industry": "Cable & Other Pay Television Services",
       "insider_count": 3,
-      "trade_date": "2026-05-14",
-      "filing_date": "2026-05-15 09:00:18",
-      "price": 36.64,
-      "qty": 180000,
-      "value": 6594300
+      "trade_date": "2026-06-18",
+      "filing_date": "2026-06-25 18:18:09",
+      "price": 6.15,
+      "qty": 274714,
+      "value": 1690072
     },
     {
-      "ticker": "TKO",
-      "company": "Tko Group Holdings, Inc.",
-      "industry": "Amusement & Recreation Services",
-      "insider_count": 4,
-      "trade_date": "2026-05-14",
-      "filing_date": "2026-05-18 16:15:02",
-      "price": 185.97,
-      "qty": 29508,
-      "value": 5487493
+      "ticker": "FISV",
+      "company": "Fiserv Inc",
+      "industry": "Business Services",
+      "insider_count": 3,
+      "trade_date": "2026-06-16",
+      "filing_date": "2026-06-18 16:06:43",
+      "price": 49.53,
+      "qty": 27710,
+      "value": 1372457
     },
     {
-      "ticker": "SHAK",
-      "company": "Shake Shack Inc.",
-      "industry": "Eating & Drinking Places",
-      "insider_count": 4,
-      "trade_date": "2026-05-15",
-      "filing_date": "2026-05-18 16:59:52",
-      "price": 61.44,
-      "qty": 49616,
-      "value": 3048546
-    },
-    {
-      "ticker": "HUBS",
-      "company": "Hubspot Inc",
+      "ticker": "ADSK",
+      "company": "Autodesk, Inc.",
       "industry": "Prepackaged Software",
       "insider_count": 3,
-      "trade_date": "2026-05-11",
-      "filing_date": "2026-05-12 16:14:39",
-      "price": 183.87,
-      "qty": 14063,
-      "value": 2585781
+      "trade_date": "2026-06-15",
+      "filing_date": "2026-06-23 16:48:10",
+      "price": 197.0,
+      "qty": 6960,
+      "value": 1371119
     },
     {
-      "ticker": "PSN",
-      "company": "Parsons Corp",
-      "industry": "Computer Integrated Systems Design",
-      "insider_count": 4,
-      "trade_date": "2026-05-13",
-      "filing_date": "2026-05-14 16:30:42",
-      "price": 50.09,
-      "qty": 42500,
-      "value": 2128718
-    },
-    {
-      "ticker": "FCN",
-      "company": "Fti Consulting, Inc",
-      "industry": "Management Consulting Services",
+      "ticker": "FCBM",
+      "company": "First Carolina Financial Services, Inc.",
+      "industry": "State Commercial Banks",
       "insider_count": 3,
-      "trade_date": "2026-05-13",
-      "filing_date": "2026-05-14 07:29:47",
-      "price": 144.21,
-      "qty": 14400,
-      "value": 2076584
-    },
-    {
-      "ticker": "EVTC",
-      "company": "Evertec, Inc.",
-      "industry": "Computer Processing & Data Preparation",
-      "insider_count": 4,
-      "trade_date": "2026-05-08",
-      "filing_date": "2026-05-12 16:06:03",
-      "price": 23.38,
-      "qty": 78000,
-      "value": 1823253
-    },
-    {
-      "ticker": "BXDC",
-      "company": "Blackstone Digital Infrastructure Trust Inc.",
-      "industry": "Real Estate",
-      "insider_count": 3,
-      "trade_date": "2026-05-15",
-      "filing_date": "2026-05-19 16:30:08",
-      "price": 20.0,
-      "qty": 60000,
-      "value": 1200000
-    },
-    {
-      "ticker": "CELH",
-      "company": "Celsius Holdings, Inc.",
-      "industry": "Bottled & Canned Soft Drinks & Carbonated Waters",
-      "insider_count": 3,
-      "trade_date": "2026-05-21",
-      "filing_date": "2026-05-26 16:31:19",
-      "price": 29.39,
-      "qty": 24375,
-      "value": 716358
-    },
-    {
-      "ticker": "FLUT",
-      "company": "Flutter Entertainment Plc",
-      "industry": "Computer Programming, Data Processing, Etc.",
-      "insider_count": 3,
-      "trade_date": "2026-05-11",
-      "filing_date": "2026-05-13 12:15:20",
-      "price": 99.92,
-      "qty": 6974,
-      "value": 696829
+      "trade_date": "2026-06-18",
+      "filing_date": "2026-06-22 19:03:23",
+      "price": 12.5,
+      "qty": 63805,
+      "value": 797563
     }
   ],
-  "cluster_buys_updated": "2026-06-06 10:56"
+  "cluster_buys_updated": "2026-07-02 10:46"
 }
