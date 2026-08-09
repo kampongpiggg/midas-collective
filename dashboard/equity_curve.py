@@ -111,6 +111,24 @@ SNAPSHOTS = [
             "MO": 80,
         },
     },
+    {
+        "date": "2026-07-06",
+        "cash": 220.46,
+        # Avg PX (cost basis) for reference — not used by the equity-curve math:
+        # KLAC 245.32, JNJ 258.87, NVDA 186.98, MU 373.04, INTC 47.64,
+        # CVX 183.42, V 319.42, ABBV 203.31, MO 68.24
+        "holdings": {
+            "KLAC": 22,
+            "JNJ": 21,
+            "NVDA": 28,
+            "MU": 5.5,
+            "INTC": 44,
+            "CVX": 33,
+            "V": 16,
+            "ABBV": 22,
+            "MO": 80,
+        },
+    },
 ]
 
 # Total capital injections (for accurate return calculation)
