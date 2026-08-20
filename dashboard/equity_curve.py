@@ -116,7 +116,7 @@ SNAPSHOTS = [
         "cash": 220.46,
         # Avg PX (cost basis) for reference — not used by the equity-curve math:
         # KLAC 245.32, JNJ 258.87, NVDA 186.98, MU 373.04, INTC 47.64,
-        # CVX 183.42, V 319.42, ABBV 203.31, MO 68.24
+        # CVX 183.42, V 319.42, ABBV 203.31, MO 68.24, MCD 273.70
         "holdings": {
             "KLAC": 22,
             "JNJ": 21,
@@ -127,6 +127,26 @@ SNAPSHOTS = [
             "V": 16,
             "ABBV": 22,
             "MO": 80,
+            "MCD": 20,
+        },
+    },
+    {
+        "date": "2026-08-12",
+        "cash": 14.47,
+        # Avg PX (cost basis) for reference — not used by the equity-curve math:
+        # UNP 292.92, CEG 279.92, INTC 58.77, KLAC 239.66, V 319.42,
+        # AMZN 272.42, BAC 64.04, MSFT 498.43, MU 417.54, NVDA 186.98
+        "holdings": {
+            "UNP": 18,
+            "CEG": 19,
+            "INTC": 53,
+            "KLAC": 26,
+            "V": 15,
+            "AMZN": 20,
+            "BAC": 85,
+            "MSFT": 11,
+            "MU": 6,
+            "NVDA": 25,
         },
     },
 ]
