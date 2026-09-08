@@ -474,10 +474,10 @@ if holdings:
 
         view = actionable.rename(columns={
             "ticker": "Ticker", "action": "Action", "price": "Price",
-            "cur_shares": "Cur shares", "target_shares": "Tgt shares",
+            "cur_shares": "Current shares", "target_shares": "Target shares",
             "delta_shares": "Δ shares", "delta_value": "Δ $",
         })
-        view = view[["Ticker", "Action", "Price", "Cur shares", "Tgt shares",
+        view = view[["Ticker", "Action", "Price", "Current shares", "Target shares",
                      "Δ shares", "Δ $"]]
 
         def _color_action(val):
@@ -492,8 +492,8 @@ if holdings:
             view.style
             .map(_color_action, subset=["Action"])
             .format({
-                "Price": "${:,.2f}", "Cur shares": "{:,.3f}", "Tgt shares": "{:,.3f}",
-                "Δ shares": "{:+,.3f}", "Δ $": "${:+,.0f}",
+                "Price": "${:,.2f}", "Current shares": "{:,.3f}",
+                "Target shares": "{:,.3f}", "Δ shares": "{:+,.3f}", "Δ $": "${:+,.0f}",
             })
         )
         st.dataframe(styled, use_container_width=True, hide_index=True)
