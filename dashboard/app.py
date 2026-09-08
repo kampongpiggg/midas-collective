@@ -471,6 +471,8 @@ if holdings:
         actionable = trades_df[
             trades_df["action"].isin(["OPEN", "GROW", "TRIM", "CLOSE"])
         ].copy()
+        # Default sort: by change in shares, largest additions → largest reductions
+        actionable = actionable.sort_values("delta_shares", ascending=False)
 
         view = actionable.rename(columns={
             "ticker": "Ticker", "action": "Action", "price": "Price",
