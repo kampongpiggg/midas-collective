@@ -8,97 +8,97 @@
   "ann_vol": 0.222,
   "win_rate_monthly": 0.7056,
   "num_months": 180,
-  "last_rebalance_date": "2026-08-07",
+  "last_rebalance_date": "2026-09-04",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 1.496,
-      "value_score": -0.088,
-      "quality_score": -0.314,
-      "momentum_score": 4.89
+      "alpha_score": 2.032,
+      "value_score": -0.046,
+      "quality_score": 1.224,
+      "momentum_score": 4.918
     },
     {
       "ticker": "MU",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 1.192,
-      "value_score": 0.124,
-      "quality_score": 1.001,
-      "momentum_score": 2.451
+      "alpha_score": 1.085,
+      "value_score": 0.009,
+      "quality_score": 0.882,
+      "momentum_score": 2.365
     },
     {
       "ticker": "KLAC",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.7,
-      "value_score": 0.286,
-      "quality_score": 1.479,
-      "momentum_score": 0.336
-    },
-    {
-      "ticker": "CEG",
-      "sector": "Utilities",
-      "weight": 0.1,
-      "alpha_score": 0.52,
-      "value_score": 1.0,
-      "quality_score": 1.0,
-      "momentum_score": -0.439
-    },
-    {
-      "ticker": "UNP",
-      "sector": "Industrials",
-      "weight": 0.1,
-      "alpha_score": 0.52,
-      "value_score": 0.569,
-      "quality_score": 0.992,
-      "momentum_score": -0.003
-    },
-    {
-      "ticker": "MSFT",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.515,
-      "value_score": 0.397,
-      "quality_score": 0.769,
-      "momentum_score": 0.38
-    },
-    {
-      "ticker": "INTC",
-      "sector": "Technology",
-      "weight": 0.1,
-      "alpha_score": 0.488,
-      "value_score": 1.495,
-      "quality_score": -1.838,
-      "momentum_score": 1.808
+      "alpha_score": 0.641,
+      "value_score": 0.488,
+      "quality_score": 1.39,
+      "momentum_score": 0.044
     },
     {
       "ticker": "V",
       "sector": "Financial Services",
       "weight": 0.1,
-      "alpha_score": 0.45,
+      "alpha_score": 0.484,
       "value_score": 0.627,
       "quality_score": 0.645,
-      "momentum_score": 0.079
+      "momentum_score": 0.18
     },
     {
-      "ticker": "AMZN",
-      "sector": "Consumer Cyclical",
+      "ticker": "MSFT",
+      "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.408,
-      "value_score": 0.055,
-      "quality_score": 0.347,
-      "momentum_score": 0.822
+      "alpha_score": 0.468,
+      "value_score": 0.405,
+      "quality_score": 0.608,
+      "momentum_score": 0.389
+    },
+    {
+      "ticker": "UNP",
+      "sector": "Industrials",
+      "weight": 0.1,
+      "alpha_score": 0.441,
+      "value_score": 0.467,
+      "quality_score": 0.93,
+      "momentum_score": -0.074
     },
     {
       "ticker": "BAC",
       "sector": "Financial Services",
       "weight": 0.1,
-      "alpha_score": 0.393,
-      "value_score": 0.441,
+      "alpha_score": 0.427,
+      "value_score": 0.465,
       "quality_score": -0.029,
-      "momentum_score": 0.767
+      "momentum_score": 0.847
+    },
+    {
+      "ticker": "HCA",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.427,
+      "value_score": 0.791,
+      "quality_score": 1.029,
+      "momentum_score": -0.539
+    },
+    {
+      "ticker": "ADP",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.388,
+      "value_score": -0.242,
+      "quality_score": 0.834,
+      "momentum_score": 0.571
+    },
+    {
+      "ticker": "JNJ",
+      "sector": "Healthcare",
+      "weight": 0.1,
+      "alpha_score": 0.373,
+      "value_score": 0.477,
+      "quality_score": 0.29,
+      "momentum_score": 0.351
     }
   ],
   "monthly_picks": {
@@ -221,75 +221,112 @@
         "AMZN",
         "BAC"
       ]
+    },
+    "2026-09": {
+      "date": "2026-09-04",
+      "tickers": [
+        "NVDA",
+        "MU",
+        "KLAC",
+        "V",
+        "MSFT",
+        "UNP",
+        "BAC",
+        "HCA",
+        "ADP",
+        "JNJ"
+      ]
     }
   },
   "cluster_buys": [
     {
-      "ticker": "SCTX",
-      "company": "Scribe Therapeutics, Inc.",
-      "industry": "Biological Products, (No Diagnostic Substances)",
+      "ticker": "PNAQ",
+      "company": "Pinnacle Acquisition Corp",
+      "industry": "Blank Checks",
       "insider_count": 3,
-      "trade_date": "2026-07-27",
-      "filing_date": "2026-07-29 18:50:42",
-      "price": 15.09,
-      "qty": 4391238,
-      "value": 66259761
-    },
-    {
-      "ticker": "FSBC",
-      "company": "Five Star Bancorp",
-      "industry": "State Commercial Banks",
-      "insider_count": 4,
-      "trade_date": "2026-07-22",
-      "filing_date": "2026-07-24 16:34:00",
-      "price": 44.0,
-      "qty": 139318,
-      "value": 6129992
-    },
-    {
-      "ticker": "BRVE",
-      "company": "Braveheart Bio, Inc.",
-      "industry": "Pharmaceutical Preparations",
-      "insider_count": 4,
-      "trade_date": "2026-08-07",
-      "filing_date": "2026-08-07 16:41:40",
-      "price": 18.0,
-      "qty": 249998,
-      "value": 4499964
-    },
-    {
-      "ticker": "CLBK",
-      "company": "Columbia Financial, Inc./Md/",
-      "industry": "Savings Institution, Federally Chartered",
-      "insider_count": 10,
-      "trade_date": "2026-07-20",
-      "filing_date": "2026-07-22 21:24:08",
+      "trade_date": "2026-08-10",
+      "filing_date": "2026-08-12 19:02:45",
       "price": 10.0,
-      "qty": 402537,
-      "value": 4025370
+      "qty": 2735000,
+      "value": 27350000
     },
     {
-      "ticker": "GBFH",
-      "company": "Gbank Financial Holdings Inc.",
-      "industry": "State Commercial Banks",
+      "ticker": "BLSM",
+      "company": "Blossomhill Therapeutics, Inc.",
+      "industry": "Pharmaceutical Preparations",
       "insider_count": 3,
-      "trade_date": "2026-08-05",
-      "filing_date": "2026-08-07 16:17:29",
-      "price": 21.4,
-      "qty": 67263,
-      "value": 1439671
+      "trade_date": "2026-08-10",
+      "filing_date": "2026-08-12 16:46:16",
+      "price": 16.0,
+      "qty": 1562500,
+      "value": 25000000
     },
     {
-      "ticker": "JMKE",
-      "company": "Jersey Mike'S Subs Inc.",
-      "industry": "Eating Places",
+      "ticker": "CDNL",
+      "company": "Cardinal Infrastructure Group Inc.",
+      "industry": "Heavy Construction Non-Bldg Contractors",
+      "insider_count": 7,
+      "trade_date": "2026-08-17",
+      "filing_date": "2026-08-18 17:26:41",
+      "price": 38.54,
+      "qty": 221597,
+      "value": 8541274
+    },
+    {
+      "ticker": "APLM",
+      "company": "Apollomics Inc.",
+      "industry": "Pharmaceutical Preparations",
       "insider_count": 3,
-      "trade_date": "2026-07-31",
-      "filing_date": "2026-08-04 16:30:10",
-      "price": 23.0,
-      "qty": 38000,
-      "value": 874000
+      "trade_date": "2026-08-14",
+      "filing_date": "2026-08-17 19:32:04",
+      "price": 14.14,
+      "qty": 583334,
+      "value": 8250009
+    },
+    {
+      "ticker": "DKS",
+      "company": "Dick'S Sporting Goods, Inc.",
+      "industry": "Miscellaneous Shopping Goods Stores",
+      "insider_count": 3,
+      "trade_date": "2026-08-26",
+      "filing_date": "2026-08-28 16:24:09",
+      "price": 129.98,
+      "qty": 27100,
+      "value": 3522520
+    },
+    {
+      "ticker": "XRN",
+      "company": "Chiron Real Estate Inc.",
+      "industry": "Real Estate Investment Trusts",
+      "insider_count": 3,
+      "trade_date": "2026-08-11",
+      "filing_date": "2026-08-13 20:16:01",
+      "price": 36.05,
+      "qty": 69975,
+      "value": 2522709
+    },
+    {
+      "ticker": "AMRZ",
+      "company": "Amrize Ltd",
+      "industry": "Cement, Hydraulic",
+      "insider_count": 3,
+      "trade_date": "2026-09-02",
+      "filing_date": "2026-09-03 12:40:15",
+      "price": 43.78,
+      "qty": 41260,
+      "value": 1806461
+    },
+    {
+      "ticker": "REZI",
+      "company": "Resideo Technologies, Inc.",
+      "industry": "Hardware",
+      "insider_count": 3,
+      "trade_date": "2026-08-17",
+      "filing_date": "2026-08-18 07:33:44",
+      "price": 20.56,
+      "qty": 41245,
+      "value": 848123
     }
   ],
-  "cluster_buys_updated": "2026-08-09 13:26"
+  "cluster_buys_updated": "2026-09-08 17:15"
 }
