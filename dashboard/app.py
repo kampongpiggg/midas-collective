@@ -468,19 +468,24 @@ if holdings:
 
         trades_df = pd.DataFrame(reb["trades"])
         # Only show rows that actually require an order (skip HOLD / N/A noise)
-        actionable = trades_df[trades_df["action"].isin(["BUY", "SELL", "CLOSE"])].copy()
+        actionable = trades_df[
+            trades_df["action"].isin(["OPEN", "GROW", "TRIM", "CLOSE"])
+        ].copy()
 
         view = actionable.rename(columns={
             "ticker": "Ticker", "action": "Action", "price": "Price",
             "cur_shares": "Cur shares", "target_shares": "Tgt shares",
-            "delta_shares": "Δ shares", "delta_value": "Δ $", "target_weight": "Tgt %",
+            "delta_shares": "Δ shares", "delta_value": "Δ $",
         })
-        view["Tgt %"] = view["Tgt %"] * 100
         view = view[["Ticker", "Action", "Price", "Cur shares", "Tgt shares",
-                     "Δ shares", "Δ $", "Tgt %"]]
+                     "Δ shares", "Δ $"]]
 
         def _color_action(val):
-            color = {"BUY": "#22c55e", "SELL": "#f59e0b", "CLOSE": "#ef4444"}.get(val, "")
+            # Buys green (OPEN/GROW), sells red (TRIM/CLOSE)
+            color = {
+                "OPEN": "#22c55e", "GROW": "#22c55e",
+                "TRIM": "#ef4444", "CLOSE": "#ef4444",
+            }.get(val, "")
             return f"color: {color}; font-weight: 600;" if color else ""
 
         styled = (
@@ -488,7 +493,7 @@ if holdings:
             .map(_color_action, subset=["Action"])
             .format({
                 "Price": "${:,.2f}", "Cur shares": "{:,.3f}", "Tgt shares": "{:,.3f}",
-                "Δ shares": "{:+,.3f}", "Δ $": "${:+,.0f}", "Tgt %": "{:.0f}%",
+                "Δ shares": "{:+,.3f}", "Δ $": "${:+,.0f}",
             })
         )
         st.dataframe(styled, use_container_width=True, hide_index=True)
@@ -499,8 +504,9 @@ if holdings:
                 " — excluded from sizing. Trades for these need a manual price."
             )
         st.caption(
-            "Δ shares / Δ $ are the orders to place (＋ buy, − sell). Fractional shares "
-            "assume a broker that supports them. Prices are the latest daily close."
+            "OPEN = new position · GROW = add · TRIM = reduce · CLOSE = exit fully. "
+            "Δ shares / Δ $ are the orders to place (＋ = buy, − = sell). Fractional "
+            "shares assume a broker that supports them. Prices are the latest daily close."
         )
 
 else:

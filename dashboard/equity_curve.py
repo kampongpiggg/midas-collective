@@ -258,7 +258,9 @@ def compute_rebalance_trades(
       total_value : gross book value used for sizing
       trades      : list of per-ticker dicts (ticker, action, cur_shares,
                     cur_value, target_weight, target_value, target_shares,
-                    delta_shares, delta_value, price)
+                    delta_shares, delta_value, price). action is one of
+                    OPEN (new position), GROW (add to existing), TRIM (reduce),
+                    CLOSE (exit fully), HOLD (no change), N/A (no price).
       summary     : {buy_value, sell_value, cash_before, cash_after,
                      n_buy, n_sell, n_close, unpriceable}
     """
@@ -304,15 +306,15 @@ def compute_rebalance_trades(
         delta_value = delta_shares * p
 
         if tw == 0.0 and cur > 0:
-            action = "CLOSE"
+            action = "CLOSE"          # exit an existing position entirely
             n_close += 1
             sell_value += -delta_value
         elif delta_value > hold_threshold:
-            action = "BUY"
+            action = "OPEN" if cur == 0 else "GROW"  # new vs. add to existing
             n_buy += 1
             buy_value += delta_value
         elif delta_value < -hold_threshold:
-            action = "SELL"
+            action = "TRIM"           # reduce an existing position
             n_sell += 1
             sell_value += -delta_value
         else:
@@ -325,8 +327,8 @@ def compute_rebalance_trades(
             "delta_shares": delta_shares, "delta_value": delta_value, "price": p,
         })
 
-    # Sort for display: BUY / SELL / CLOSE first (by trade size), then HOLD, then N/A
-    order = {"BUY": 0, "SELL": 1, "CLOSE": 2, "HOLD": 3, "N/A": 4}
+    # Sort for display: actionable orders first (by trade size), then HOLD, N/A
+    order = {"OPEN": 0, "GROW": 1, "TRIM": 2, "CLOSE": 3, "HOLD": 4, "N/A": 5}
     trades.sort(key=lambda r: (order.get(r["action"], 5),
                                -abs(r["delta_value"]) if r["delta_value"] == r["delta_value"] else 0))
 
