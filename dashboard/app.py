@@ -18,7 +18,10 @@ from market_sentiment import (
     fetch_vix, fetch_fear_greed, get_vix_color, get_fear_greed_color,
     fetch_vix1d, fetch_vix_term_structure, fetch_net_gex, compute_strangle_signal,
 )
-from equity_curve import generate_equity_curve, fetch_daily_prices
+from equity_curve import (
+    generate_equity_curve, fetch_daily_prices,
+    latest_snapshot, fetch_latest_price, compute_rebalance_trades,
+)
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -421,6 +424,84 @@ if holdings:
             st.plotly_chart(fig_price, use_container_width=True)
         else:
             st.info(f"No price data for {selected_ticker}")
+
+    # ── Trades to Execute ───────────────────────────────────────────────────
+    st.subheader("Trades to Execute")
+    st.caption(
+        "Rebalance the live book into this month's targets. Assumes no intra-month "
+        "trading — positions drift until the monthly rebalance. Targets use the "
+        "weights in Current Picks (equal-weight today)."
+    )
+
+    snap = latest_snapshot()
+    if not snap:
+        st.info("No portfolio snapshot available to compute trades.")
+    else:
+        cur_shares = dict(snap.get("holdings", {}))
+        cur_cash = float(snap.get("cash", 0.0))
+
+        # Target weights from the picks (falls back to equal-weight)
+        n = len(holdings)
+        target_weights = {
+            h["ticker"]: (h.get("weight") if h.get("weight") is not None else 1.0 / n)
+            for h in holdings
+        }
+
+        universe = sorted(set(cur_shares) | set(target_weights))
+
+        @st.cache_data(ttl=3600)
+        def _latest_price(ticker: str) -> float:
+            return fetch_latest_price(ticker)
+
+        with st.spinner("Fetching latest prices…"):
+            prices = {t: _latest_price(t) for t in universe}
+
+        reb = compute_rebalance_trades(cur_shares, cur_cash, target_weights, prices)
+        s = reb["summary"]
+        snap_date = snap.get("date", "N/A")
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Book value", f"${reb['total_value']:,.0f}", help=f"Live book as of {snap_date} snapshot, marked to latest prices")
+        m2.metric("To buy", f"${s['buy_value']:,.0f}", f"{s['n_buy']} orders")
+        m3.metric("To sell", f"${s['sell_value']:,.0f}", f"{s['n_sell']} orders + {s['n_close']} closes")
+        m4.metric("Cash after", f"${s['cash_after']:,.2f}", f"from ${s['cash_before']:,.2f}")
+
+        trades_df = pd.DataFrame(reb["trades"])
+        # Only show rows that actually require an order (skip HOLD / N/A noise)
+        actionable = trades_df[trades_df["action"].isin(["BUY", "SELL", "CLOSE"])].copy()
+
+        view = actionable.rename(columns={
+            "ticker": "Ticker", "action": "Action", "price": "Price",
+            "cur_shares": "Cur shares", "target_shares": "Tgt shares",
+            "delta_shares": "Δ shares", "delta_value": "Δ $", "target_weight": "Tgt %",
+        })
+        view["Tgt %"] = view["Tgt %"] * 100
+        view = view[["Ticker", "Action", "Price", "Cur shares", "Tgt shares",
+                     "Δ shares", "Δ $", "Tgt %"]]
+
+        def _color_action(val):
+            color = {"BUY": "#22c55e", "SELL": "#f59e0b", "CLOSE": "#ef4444"}.get(val, "")
+            return f"color: {color}; font-weight: 600;" if color else ""
+
+        styled = (
+            view.style
+            .map(_color_action, subset=["Action"])
+            .format({
+                "Price": "${:,.2f}", "Cur shares": "{:,.3f}", "Tgt shares": "{:,.3f}",
+                "Δ shares": "{:+,.3f}", "Δ $": "${:+,.0f}", "Tgt %": "{:.0f}%",
+            })
+        )
+        st.dataframe(styled, use_container_width=True, hide_index=True)
+
+        if s["unpriceable"]:
+            st.warning(
+                "No price for: " + ", ".join(s["unpriceable"]) +
+                " — excluded from sizing. Trades for these need a manual price."
+            )
+        st.caption(
+            "Δ shares / Δ $ are the orders to place (＋ buy, − sell). Fractional shares "
+            "assume a broker that supports them. Prices are the latest daily close."
+        )
 
 else:
     st.warning("No holdings data found. Run `python update_data.py`.")

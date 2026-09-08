@@ -212,6 +212,140 @@ def fetch_spy_prices(start_date: str, end_date: str) -> dict:
     return fetch_daily_prices("SPY", start_date, end_date)
 
 
+def latest_snapshot() -> dict:
+    """Most recent portfolio snapshot (the current live book)."""
+    return SNAPSHOTS[-1] if SNAPSHOTS else {}
+
+
+def fetch_latest_price(ticker: str) -> float:
+    """Latest available daily close for a ticker (NaN if unavailable)."""
+    end = datetime.now()
+    start = end - timedelta(days=10)
+    px = fetch_daily_prices(
+        ticker, start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+    )
+    if not px:
+        return float("nan")
+    return px[max(px.keys())]
+
+
+def compute_rebalance_trades(
+    current_shares: dict,
+    cash: float,
+    target_weights: dict,
+    prices: dict,
+    hold_threshold: float = 1.0,
+) -> dict:
+    """
+    Trades needed to rebalance the current book into target weights.
+
+    Assumes no intra-month trading: `current_shares` is the live book drifted by
+    price since the last rebalance. Rebalances the *gross* book value (holdings
+    market value + cash) so gross exposure is preserved — since target weights
+    sum to ~1, this fully reinvests idle cash and drives cash toward zero.
+
+    Parameters
+    ----------
+    current_shares : {ticker: shares} held now
+    cash           : uninvested cash in the book
+    target_weights : {ticker: weight} desired (should sum to ~1.0)
+    prices         : {ticker: latest_price}
+    hold_threshold : |trade $| below this is treated as HOLD (no action)
+
+    Returns
+    -------
+    dict with keys:
+      total_value : gross book value used for sizing
+      trades      : list of per-ticker dicts (ticker, action, cur_shares,
+                    cur_value, target_weight, target_value, target_shares,
+                    delta_shares, delta_value, price)
+      summary     : {buy_value, sell_value, cash_before, cash_after,
+                     n_buy, n_sell, n_close, unpriceable}
+    """
+    def _px(t):
+        p = prices.get(t)
+        if p is None or (isinstance(p, float) and math.isnan(p)) or p <= 0:
+            return None
+        return float(p)
+
+    universe = sorted(set(current_shares) | set(target_weights))
+    unpriceable = [t for t in universe if _px(t) is None]
+
+    # Gross book value = investable cash + market value of priced holdings
+    total_value = float(cash)
+    for t, sh in current_shares.items():
+        p = _px(t)
+        if p is not None:
+            total_value += sh * p
+
+    trades = []
+    buy_value = sell_value = 0.0
+    n_buy = n_sell = n_close = 0
+
+    for t in universe:
+        p = _px(t)
+        cur = float(current_shares.get(t, 0.0))
+        tw = float(target_weights.get(t, 0.0))
+
+        if p is None:
+            trades.append({
+                "ticker": t, "action": "N/A", "cur_shares": cur,
+                "cur_value": float("nan"), "target_weight": tw,
+                "target_value": float("nan"), "target_shares": float("nan"),
+                "delta_shares": float("nan"), "delta_value": float("nan"),
+                "price": float("nan"),
+            })
+            continue
+
+        cur_value = cur * p
+        target_value = tw * total_value
+        target_shares = target_value / p
+        delta_shares = target_shares - cur
+        delta_value = delta_shares * p
+
+        if tw == 0.0 and cur > 0:
+            action = "CLOSE"
+            n_close += 1
+            sell_value += -delta_value
+        elif delta_value > hold_threshold:
+            action = "BUY"
+            n_buy += 1
+            buy_value += delta_value
+        elif delta_value < -hold_threshold:
+            action = "SELL"
+            n_sell += 1
+            sell_value += -delta_value
+        else:
+            action = "HOLD"
+
+        trades.append({
+            "ticker": t, "action": action, "cur_shares": cur,
+            "cur_value": cur_value, "target_weight": tw,
+            "target_value": target_value, "target_shares": target_shares,
+            "delta_shares": delta_shares, "delta_value": delta_value, "price": p,
+        })
+
+    # Sort for display: BUY / SELL / CLOSE first (by trade size), then HOLD, then N/A
+    order = {"BUY": 0, "SELL": 1, "CLOSE": 2, "HOLD": 3, "N/A": 4}
+    trades.sort(key=lambda r: (order.get(r["action"], 5),
+                               -abs(r["delta_value"]) if r["delta_value"] == r["delta_value"] else 0))
+
+    return {
+        "total_value": total_value,
+        "trades": trades,
+        "summary": {
+            "buy_value": buy_value,
+            "sell_value": sell_value,
+            "cash_before": float(cash),
+            "cash_after": float(cash) + sell_value - buy_value,
+            "n_buy": n_buy,
+            "n_sell": n_sell,
+            "n_close": n_close,
+            "unpriceable": unpriceable,
+        },
+    }
+
+
 def generate_equity_curve() -> dict:
     """
     Generate equity curve data from portfolio snapshots.
