@@ -149,6 +149,25 @@ SNAPSHOTS = [
             "NVDA": 25,
         },
     },
+    {
+        "date": "2026-09-08",
+        "cash": 148.29,
+        # Avg PX (cost basis) for reference — not used by the equity-curve math:
+        # NVDA 188.19, MU 417.54, KLAC 232.90, V 319.42, MSFT 492.03,
+        # UNP 292.78, BAC 64.04, HCA 405.93, ADP 270.22, JNJ 269.02
+        "holdings": {
+            "NVDA": 24,
+            "MU": 5.3,
+            "KLAC": 30,
+            "V": 15,
+            "MSFT": 11,
+            "UNP": 19,
+            "BAC": 85,
+            "HCA": 13,
+            "ADP": 20,
+            "JNJ": 20,
+        },
+    },
 ]
 
 # Total capital injections (for accurate return calculation)
