@@ -23,13 +23,18 @@ A quantitative, factor-based stock selection strategy applied to 100 large-cap S
 
 **Portfolio construction:** Equal-weight (10% each), rebalanced on the last trading day of each month.
 
-**Backtest results (Jan 2011 – Jan 2026, 180 months):**
-- Annualized return: 27.4%
-- Sharpe ratio: 1.20
-- Max drawdown: -34.6%
-- Annualized volatility: 22.2%
-- Monthly win rate: 70.6%
-- Statistical significance: t-stat = 5.31, p-value = 1.62e-07
+**Backtest results — walk-forward, point-in-time (Feb 2015 – Sep 2026, 140 months):**
+
+These are **walk-forward** figures: a survivorship- and split-corrected, point-in-time
+backtest that only ever uses data available at each decision date. They replace the
+earlier non-walk-forward numbers (27.4% ann / 1.20 Sharpe), which were survivorship-biased
+and materially overstated.
+- Annualized return: 19.2%  (SPY benchmark: 12.4%)
+- Sharpe ratio: 0.93
+- Max drawdown: -37.1%
+- Annualized volatility: 21.3%
+- Monthly win rate: 66.4%
+- Statistical significance vs SPY: t-stat = 2.18, one-sided p-value = 0.015
 
 ## Data Sources
 
@@ -107,12 +112,12 @@ The dashboard includes a **Strategy Health Badge** that runs statistical tests t
 Measures how many standard deviations the cumulative return is from the expected value.
 
 ```
-Expected monthly return: 2.28% (27.4% annual / 12)
-Expected monthly std: 6.41% (22.2% annual / √12)
+Expected monthly return: 1.60% (19.2% annual / 12)
+Expected monthly std: 6.14% (21.3% annual / √12)
 
 After n months:
-  Expected cumulative return = 2.28% × n
-  Expected std = 6.41% × √n
+  Expected cumulative return = 1.60% × n
+  Expected std = 6.14% × √n
   
 z = (actual_cumulative - expected_cumulative) / expected_std
 ```
@@ -126,7 +131,7 @@ z = (actual_cumulative - expected_cumulative) / expected_std
 
 **2. Volatility Chi-Squared Test**
 
-Tests whether realized volatility differs significantly from the backtest volatility (22.2% annual).
+Tests whether realized volatility differs significantly from the backtest volatility (21.3% annual).
 
 ```
 H₀: σ² = expected variance
@@ -138,11 +143,11 @@ p-value from chi-squared distribution
 
 **3. Win Rate Binomial Test**
 
-Tests whether the observed win rate is consistent with the backtest win rate (70.6%).
+Tests whether the observed win rate is consistent with the backtest win rate (66.4%).
 
 ```
-H₀: p = 0.706 (backtest win rate)
-p-value = P(observing ≤ k wins | n trials, p = 0.706)
+H₀: p = 0.664 (backtest win rate)
+p-value = P(observing ≤ k wins | n trials, p = 0.664)
 ```
 
 - **p < 0.05**: Win rate is statistically below expected.
@@ -154,11 +159,11 @@ The badge displays one of the following states based on the evaluation logic:
 | State | Conditions | Color | Action |
 |-------|------------|-------|--------|
 | **Review Thesis** | z < -2 | Black | Returns are 2+ std below expected (<2.3% chance if strategy works). Stop and investigate. |
-| **Max Drawdown Breached** | DD < -34.6% | Red | Exceeded historical max drawdown. Unprecedented territory. |
+| **Max Drawdown Breached** | DD < -37.1% | Red | Exceeded historical max drawdown. Unprecedented territory. |
 | **Underperforming Backtest** | z ∈ [-2, -1) AND (win rate p<0.05 OR DD < -25%) | Red | Below expectations with supporting red flags. Discuss next steps. |
 | **Lucky** | z > 1 AND vol significantly high AND Sharpe < 0.7 | Orange | Good returns but driven by excessive risk, not skill. Don't get overconfident. |
 | **High Volatility** | Vol significantly high (p<0.05) AND Sharpe < 0.7 | Orange | Risk is elevated without commensurate reward. |
-| **Outperforming Backtest** | z > 1.5 AND Sharpe > 1.20 | Green | Beating expectations with strong risk-adjusted returns. |
+| **Outperforming Backtest** | z > 1.5 AND Sharpe > 0.93 | Green | Beating expectations with strong risk-adjusted returns. |
 | **On Track** | Everything else | Green | Normal variance. Strategy performing as expected. |
 
 ### Interpretation Guidelines
@@ -166,7 +171,7 @@ The badge displays one of the following states based on the evaluation logic:
 - **z-score** tells you if cumulative returns are on track. A single bad month can drag it down temporarily — factor strategies have rough patches.
 - **Volatility p-value** tells you if risk has structurally changed. High vol with good Sharpe is fine; high vol with poor Sharpe is concerning.
 - **Win rate** matters less for monthly rebalancing. A few losing months don't invalidate the thesis.
-- **Drawdown** is compared against historical max (-34.6%). Approaching or exceeding this level warrants attention.
+- **Drawdown** is compared against historical max (-37.1%). Approaching or exceeding this level warrants attention.
 
 ## Monthly Update Workflow
 

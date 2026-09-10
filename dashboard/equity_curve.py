@@ -502,13 +502,15 @@ def generate_equity_curve() -> dict:
     else:
         rolling_sharpe = None
 
-    # Backtest expectations
-    EXPECTED_WIN_RATE = 0.706  # 70.6%
-    EXPECTED_MONTHLY_RETURN = 2.28  # 27.4% / 12
-    EXPECTED_MONTHLY_STD = 6.41  # 22.2% / sqrt(12)
-    EXPECTED_ANNUAL_VOL = 22.2
-    EXPECTED_SHARPE = 1.20
-    EXPECTED_MAX_DD = -34.6
+    # Backtest expectations — WALK-FORWARD, point-in-time (survivorship- & split-corrected),
+    # S&P 500 top-100, 2015-02..2026-09 (140 months). Replaces the old non-walk-forward
+    # figures (27.4% ann / 1.20 Sharpe), which were survivorship-biased and overstated.
+    EXPECTED_WIN_RATE = 0.6643  # 66.4%
+    EXPECTED_MONTHLY_RETURN = 1.60  # 19.2% / 12
+    EXPECTED_MONTHLY_STD = 6.14  # 21.3% / sqrt(12)
+    EXPECTED_ANNUAL_VOL = 21.3
+    EXPECTED_SHARPE = 0.93
+    EXPECTED_MAX_DD = -37.1
 
     # Win rate + binomial test
     if monthly_returns:

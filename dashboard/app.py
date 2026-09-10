@@ -197,9 +197,9 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         win_pvalue = ec.get("win_pvalue")
         realized_vol = ec.get("realized_vol")
         vol_pvalue = ec.get("vol_pvalue")
-        expected_vol = ec.get("expected_vol", 22.2)
-        expected_sharpe = ec.get("expected_sharpe", 1.20)
-        expected_max_dd = ec.get("expected_max_dd", -34.6)
+        expected_vol = ec.get("expected_vol", 21.3)
+        expected_sharpe = ec.get("expected_sharpe", 0.93)
+        expected_max_dd = ec.get("expected_max_dd", -37.1)
 
         # Determine status based on multiple factors
         vol_sig_high = vol_pvalue is not None and vol_pvalue < 0.05 and realized_vol and realized_vol > expected_vol
