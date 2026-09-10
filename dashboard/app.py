@@ -204,7 +204,7 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         # Strategy-health states as a statistical control chart on the WALK-FORWARD
         # return distribution (mu=1.60%/mo, sigma=6.14%/mo). z = how many std the live
         # cumulative return sits from expectation. |z|>2 = outer ~2.3% tail = outside
-        # normal variance. Symmetric: Cut is the downside tail, Lucky the upside tail.
+        # normal variance. Symmetric: STOP is the downside tail, LUCKY the upside tail.
         MIN_MONTHS = 3   # z is too noisy before this to act on
         if total_months < MIN_MONTHS:
             status, status_color = "Too Early", "#6b7280"
@@ -215,7 +215,7 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
             status, status_color = "MONITOR", "#f97316"
         elif z_score > 2:
             # Better than ~98% of paths -> unsustainable good luck, don't extrapolate.
-            status, status_color = "Lucky", "#f59e0b"
+            status, status_color = "LUCKY", "#f59e0b"
         elif z_score > 1:
             status, status_color = "EXCEEDING EXPECTATIONS", "#22c55e"
         else:

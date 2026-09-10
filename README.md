@@ -158,7 +158,7 @@ The badge is a **statistical control chart** on the walk-forward return distribu
 (μ = 1.60%/mo, σ = 6.14%/mo). `z` is how many standard deviations the live cumulative
 return sits from expectation; under "strategy working as validated," z ~ N(0,1), so
 **|z| > 2 is the outer ~2.3% tail — outside the strategy's normal variance.** The states
-are symmetric: **Cut** is the downside tail, **Lucky** the upside tail.
+are symmetric: **STOP** is the downside tail, **LUCKY** the upside tail.
 
 | State | Conditions | Color | Action |
 |-------|------------|-------|--------|
@@ -167,12 +167,12 @@ are symmetric: **Cut** is the downside tail, **Lucky** the upside tail.
 | **MONITOR** | z ∈ [-2, -1) | Orange | Below expectations but still within normal variance — watch closely. |
 | **WITHIN EXPECTATIONS** | z ∈ [-1, 1] | Green | Normal variance. Performing as validated. |
 | **EXCEEDING EXPECTATIONS** | z ∈ (1, 2] | Green | Above expectations, within normal variance. |
-| **Lucky** | z > 2 | Gold | Better than ~98% of paths — statistically unsustainable. **Don't extrapolate** this run. |
+| **LUCKY** | z > 2 | Gold | Better than ~98% of paths — statistically unsustainable. **Don't extrapolate** this run. |
 
 ### Interpretation Guidelines
 
-- **z-score drives the state.** It measures whether live cumulative returns are within the strategy's normal variance. A single bad month can dent it temporarily — factor strategies have rough patches — so it is only actionable past the 3-month minimum, and the Cut/Lucky triggers are deliberately set at the ±2σ tails (~2.3% each) to fire only when results are clearly abnormal.
-- **Drawdown** is the second Cut trigger, compared against the walk-forward historical max (-37.1%). Breaching it is unprecedented territory regardless of z.
+- **z-score drives the state.** It measures whether live cumulative returns are within the strategy's normal variance. A single bad month can dent it temporarily — factor strategies have rough patches — so it is only actionable past the 3-month minimum, and the STOP/LUCKY triggers are deliberately set at the ±2σ tails (~2.3% each) to fire only when results are clearly abnormal.
+- **Drawdown** is the second STOP trigger, compared against the walk-forward historical max (-37.1%). Breaching it is unprecedented territory regardless of z.
 - **Vol, Win rate, Sharpe** are shown as context, not state drivers. They help explain *why* a z-score is where it is (e.g. an outsized drawdown or a volatility spike), but the action signal is the z-band above.
 
 ## Monthly Update Workflow
