@@ -201,26 +201,25 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         expected_sharpe = ec.get("expected_sharpe", 0.93)
         expected_max_dd = ec.get("expected_max_dd", -37.1)
 
-        # Determine status based on multiple factors
-        vol_sig_high = vol_pvalue is not None and vol_pvalue < 0.05 and realized_vol and realized_vol > expected_vol
-        win_sig_low = win_pvalue is not None and win_pvalue < 0.05
-        sharpe_low = rolling_sharpe is not None and rolling_sharpe < 0.7
-        sharpe_high = rolling_sharpe is not None and rolling_sharpe > expected_sharpe
-
-        if z_score < -2:
-            status, status_color = "Review Thesis", "#000000"
-        elif drawdown < expected_max_dd:
-            status, status_color = "Max Drawdown Breached", "#dc2626"
-        elif z_score < -1 and z_score >= -2 and (win_sig_low or drawdown < -25):
-            status, status_color = "Underperforming Backtest", "#dc2626"
-        elif z_score > 1 and vol_sig_high and sharpe_low:
-            status, status_color = "Lucky", "#f97316"
-        elif vol_sig_high and sharpe_low:
-            status, status_color = "High Volatility", "#f97316"
-        elif z_score > 1.5 and sharpe_high:
-            status, status_color = "Outperforming Backtest", "#22c55e"
+        # Strategy-health states as a statistical control chart on the WALK-FORWARD
+        # return distribution (mu=1.60%/mo, sigma=6.14%/mo). z = how many std the live
+        # cumulative return sits from expectation. |z|>2 = outer ~2.3% tail = outside
+        # normal variance. Symmetric: Cut is the downside tail, Lucky the upside tail.
+        MIN_MONTHS = 3   # z is too noisy before this to act on
+        if total_months < MIN_MONTHS:
+            status, status_color = "Too Early", "#6b7280"
+        elif z_score < -2 or drawdown < expected_max_dd:
+            # Worse than ~98% of paths a working strategy produces -> stop.
+            status, status_color = "STOP", "#dc2626"
+        elif z_score < -1:
+            status, status_color = "MONITOR", "#f97316"
+        elif z_score > 2:
+            # Better than ~98% of paths -> unsustainable good luck, don't extrapolate.
+            status, status_color = "Lucky", "#f59e0b"
+        elif z_score > 1:
+            status, status_color = "EXCEEDING EXPECTATIONS", "#22c55e"
         else:
-            status, status_color = "On Track", "#22c55e"
+            status, status_color = "WITHIN EXPECTATIONS", "#22c55e"
 
         # Build metrics display
         sharpe_str = f"{rolling_sharpe:.2f}" if rolling_sharpe else "N/A"

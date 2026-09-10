@@ -154,24 +154,26 @@ p-value = P(observing ≤ k wins | n trials, p = 0.664)
 
 ### Strategy States
 
-The badge displays one of the following states based on the evaluation logic:
+The badge is a **statistical control chart** on the walk-forward return distribution
+(μ = 1.60%/mo, σ = 6.14%/mo). `z` is how many standard deviations the live cumulative
+return sits from expectation; under "strategy working as validated," z ~ N(0,1), so
+**|z| > 2 is the outer ~2.3% tail — outside the strategy's normal variance.** The states
+are symmetric: **Cut** is the downside tail, **Lucky** the upside tail.
 
 | State | Conditions | Color | Action |
 |-------|------------|-------|--------|
-| **Review Thesis** | z < -2 | Black | Returns are 2+ std below expected (<2.3% chance if strategy works). Stop and investigate. |
-| **Max Drawdown Breached** | DD < -37.1% | Red | Exceeded historical max drawdown. Unprecedented territory. |
-| **Underperforming Backtest** | z ∈ [-2, -1) AND (win rate p<0.05 OR DD < -25%) | Red | Below expectations with supporting red flags. Discuss next steps. |
-| **Lucky** | z > 1 AND vol significantly high AND Sharpe < 0.7 | Orange | Good returns but driven by excessive risk, not skill. Don't get overconfident. |
-| **High Volatility** | Vol significantly high (p<0.05) AND Sharpe < 0.7 | Orange | Risk is elevated without commensurate reward. |
-| **Outperforming Backtest** | z > 1.5 AND Sharpe > 0.93 | Green | Beating expectations with strong risk-adjusted returns. |
-| **On Track** | Everything else | Green | Normal variance. Strategy performing as expected. |
+| **Too Early** | < 3 live months | Gray | z too noisy to act on yet. |
+| **STOP** | z < -2 **or** DD < -37.1% | Red | Worse than ~98% of paths a *working* strategy produces (or historical max drawdown breached). Not normal variance — **stop the strategy.** |
+| **MONITOR** | z ∈ [-2, -1) | Orange | Below expectations but still within normal variance — watch closely. |
+| **WITHIN EXPECTATIONS** | z ∈ [-1, 1] | Green | Normal variance. Performing as validated. |
+| **EXCEEDING EXPECTATIONS** | z ∈ (1, 2] | Green | Above expectations, within normal variance. |
+| **Lucky** | z > 2 | Gold | Better than ~98% of paths — statistically unsustainable. **Don't extrapolate** this run. |
 
 ### Interpretation Guidelines
 
-- **z-score** tells you if cumulative returns are on track. A single bad month can drag it down temporarily — factor strategies have rough patches.
-- **Volatility p-value** tells you if risk has structurally changed. High vol with good Sharpe is fine; high vol with poor Sharpe is concerning.
-- **Win rate** matters less for monthly rebalancing. A few losing months don't invalidate the thesis.
-- **Drawdown** is compared against historical max (-37.1%). Approaching or exceeding this level warrants attention.
+- **z-score drives the state.** It measures whether live cumulative returns are within the strategy's normal variance. A single bad month can dent it temporarily — factor strategies have rough patches — so it is only actionable past the 3-month minimum, and the Cut/Lucky triggers are deliberately set at the ±2σ tails (~2.3% each) to fire only when results are clearly abnormal.
+- **Drawdown** is the second Cut trigger, compared against the walk-forward historical max (-37.1%). Breaching it is unprecedented territory regardless of z.
+- **Vol, Win rate, Sharpe** are shown as context, not state drivers. They help explain *why* a z-score is where it is (e.g. an outsized drawdown or a volatility spike), but the action signal is the z-band above.
 
 ## Monthly Update Workflow
 
