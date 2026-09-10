@@ -197,12 +197,12 @@ if equity_curve.get("dates") and len(equity_curve["dates"]) > 0:
         win_pvalue = ec.get("win_pvalue")
         realized_vol = ec.get("realized_vol")
         vol_pvalue = ec.get("vol_pvalue")
-        expected_vol = ec.get("expected_vol", 21.3)
-        expected_sharpe = ec.get("expected_sharpe", 0.93)
+        expected_vol = ec.get("expected_vol", 20.1)
+        expected_sharpe = ec.get("expected_sharpe", 0.94)
         expected_max_dd = ec.get("expected_max_dd", -37.1)
 
         # Strategy-health states as a statistical control chart on the WALK-FORWARD
-        # return distribution (mu=1.60%/mo, sigma=6.14%/mo). z = how many std the live
+        # return distribution (mu=1.53%/mo, sigma=5.81%/mo). z = how many std the live
         # cumulative return sits from expectation. |z|>2 = outer ~2.3% tail = outside
         # normal variance. Symmetric: STOP is the downside tail, LUCKY the upside tail.
         MIN_MONTHS = 3   # z is too noisy before this to act on

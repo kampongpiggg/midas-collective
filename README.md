@@ -23,18 +23,18 @@ A quantitative, factor-based stock selection strategy applied to 100 large-cap S
 
 **Portfolio construction:** Equal-weight (10% each), rebalanced on the last trading day of each month.
 
-**Backtest results — walk-forward, point-in-time (Feb 2015 – Sep 2026, 140 months):**
+**Backtest results — walk-forward, point-in-time (Feb 2012 – Sep 2026, 176 months):**
 
 These are **walk-forward** figures: a survivorship- and split-corrected, point-in-time
 backtest that only ever uses data available at each decision date. They replace the
 earlier non-walk-forward numbers (27.4% ann / 1.20 Sharpe), which were survivorship-biased
 and materially overstated.
-- Annualized return: 19.2%  (SPY benchmark: 12.4%)
-- Sharpe ratio: 0.93
+- Annualized return: 18.3%  (SPY benchmark: 12.9%)
+- Sharpe ratio: 0.94
 - Max drawdown: -37.1%
-- Annualized volatility: 21.3%
-- Monthly win rate: 66.4%
-- Statistical significance vs SPY: t-stat = 2.18, one-sided p-value = 0.015
+- Annualized volatility: 20.1%
+- Monthly win rate: 67.6%
+- Statistical significance vs SPY: t-stat = 2.07, one-sided p-value = 0.020
 
 ## Data Sources
 
@@ -112,12 +112,12 @@ The dashboard includes a **Strategy Health Badge** that runs statistical tests t
 Measures how many standard deviations the cumulative return is from the expected value.
 
 ```
-Expected monthly return: 1.60% (19.2% annual / 12)
-Expected monthly std: 6.14% (21.3% annual / √12)
+Expected monthly return: 1.53% (18.3% annual / 12)
+Expected monthly std: 5.81% (20.1% annual / √12)
 
 After n months:
-  Expected cumulative return = 1.60% × n
-  Expected std = 6.14% × √n
+  Expected cumulative return = 1.53% × n
+  Expected std = 5.81% × √n
   
 z = (actual_cumulative - expected_cumulative) / expected_std
 ```
@@ -131,7 +131,7 @@ z = (actual_cumulative - expected_cumulative) / expected_std
 
 **2. Volatility Chi-Squared Test**
 
-Tests whether realized volatility differs significantly from the backtest volatility (21.3% annual).
+Tests whether realized volatility differs significantly from the backtest volatility (20.1% annual).
 
 ```
 H₀: σ² = expected variance
@@ -143,11 +143,11 @@ p-value from chi-squared distribution
 
 **3. Win Rate Binomial Test**
 
-Tests whether the observed win rate is consistent with the backtest win rate (66.4%).
+Tests whether the observed win rate is consistent with the backtest win rate (67.6%).
 
 ```
-H₀: p = 0.664 (backtest win rate)
-p-value = P(observing ≤ k wins | n trials, p = 0.664)
+H₀: p = 0.676 (backtest win rate)
+p-value = P(observing ≤ k wins | n trials, p = 0.676)
 ```
 
 - **p < 0.05**: Win rate is statistically below expected.
@@ -155,7 +155,7 @@ p-value = P(observing ≤ k wins | n trials, p = 0.664)
 ### Strategy States
 
 The badge is a **statistical control chart** on the walk-forward return distribution
-(μ = 1.60%/mo, σ = 6.14%/mo). `z` is how many standard deviations the live cumulative
+(μ = 1.53%/mo, σ = 5.81%/mo). `z` is how many standard deviations the live cumulative
 return sits from expectation; under "strategy working as validated," z ~ N(0,1), so
 **|z| > 2 is the outer ~2.3% tail — outside the strategy's normal variance.** The states
 are symmetric: **STOP** is the downside tail, **LUCKY** the upside tail.
