@@ -168,6 +168,25 @@ SNAPSHOTS = [
             "JNJ": 20,
         },
     },
+    {
+        "date": "2026-10-05",
+        "cash": -19.82,
+        # Avg PX (cost basis) for reference — not used by the equity-curve math:
+        # KLAC 232.90, MSFT 492.03, PH 962.07, NVDA 188.66, V 319.42,
+        # DE 687.04, UNP 291.96, CEG 265.83, MU 423.41, HCA 405.93
+        "holdings": {
+            "KLAC": 26,
+            "MSFT": 10,
+            "PH": 5.5,
+            "NVDA": 23,
+            "V": 15,
+            "DE": 8,
+            "UNP": 20,
+            "CEG": 21,
+            "MU": 5.3,
+            "HCA": 13,
+        },
+    },
 ]
 
 # Total capital injections (for accurate return calculation)
