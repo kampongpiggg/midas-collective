@@ -11,97 +11,97 @@
   "num_months": 176,
   "monthly_t_stat_vs_spy": 2.07,
   "monthly_p_value_one_sided_vs_spy": 0.02,
-  "last_rebalance_date": "2026-10-02",
+  "last_rebalance_date": "2026-11-12",
   "current_holdings": [
     {
       "ticker": "NVDA",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 2.056,
-      "value_score": -0.021,
-      "quality_score": 1.218,
-      "momentum_score": 4.972
+      "alpha_score": 1.796,
+      "value_score": 0.095,
+      "quality_score": 1.282,
+      "momentum_score": 4.012
     },
     {
-      "ticker": "HCA",
-      "sector": "Healthcare",
-      "weight": 0.1,
-      "alpha_score": 0.683,
-      "value_score": 0.728,
-      "quality_score": 1.029,
-      "momentum_score": 0.293
-    },
-    {
-      "ticker": "KLAC",
+      "ticker": "ACN",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.644,
-      "value_score": 0.334,
-      "quality_score": 1.341,
-      "momentum_score": 0.258
-    },
-    {
-      "ticker": "V",
-      "sector": "Financial Services",
-      "weight": 0.1,
-      "alpha_score": 0.524,
-      "value_score": 0.628,
-      "quality_score": 0.658,
-      "momentum_score": 0.286
-    },
-    {
-      "ticker": "PH",
-      "sector": "Industrials",
-      "weight": 0.1,
-      "alpha_score": 0.495,
-      "value_score": 0.449,
-      "quality_score": 0.675,
-      "momentum_score": 0.362
-    },
-    {
-      "ticker": "UNP",
-      "sector": "Industrials",
-      "weight": 0.1,
-      "alpha_score": 0.493,
-      "value_score": 0.499,
-      "quality_score": 0.93,
-      "momentum_score": 0.05
+      "alpha_score": 0.761,
+      "value_score": 0.932,
+      "quality_score": -0.306,
+      "momentum_score": 1.659
     },
     {
       "ticker": "CEG",
       "sector": "Utilities",
       "weight": 0.1,
-      "alpha_score": 0.488,
+      "alpha_score": 0.704,
       "value_score": 1.0,
       "quality_score": 1.0,
-      "momentum_score": -0.537
+      "momentum_score": 0.111
     },
     {
-      "ticker": "MSFT",
-      "sector": "Technology",
+      "ticker": "COF",
+      "sector": "Financial Services",
       "weight": 0.1,
-      "alpha_score": 0.484,
-      "value_score": 0.391,
-      "quality_score": 0.604,
-      "momentum_score": 0.456
+      "alpha_score": 0.61,
+      "value_score": 1.024,
+      "quality_score": 1.111,
+      "momentum_score": -0.304
+    },
+    {
+      "ticker": "HON",
+      "sector": "Industrials",
+      "weight": 0.1,
+      "alpha_score": 0.609,
+      "value_score": 1.202,
+      "quality_score": 0.839,
+      "momentum_score": -0.214
     },
     {
       "ticker": "MU",
       "sector": "Technology",
       "weight": 0.1,
-      "alpha_score": 0.46,
-      "value_score": 0.009,
-      "quality_score": 0.879,
-      "momentum_score": 0.493
+      "alpha_score": 0.568,
+      "value_score": 0.558,
+      "quality_score": 1.624,
+      "momentum_score": -0.479
     },
     {
-      "ticker": "DE",
+      "ticker": "V",
+      "sector": "Financial Services",
+      "weight": 0.1,
+      "alpha_score": 0.546,
+      "value_score": 0.491,
+      "quality_score": 0.736,
+      "momentum_score": 0.412
+    },
+    {
+      "ticker": "MSFT",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.503,
+      "value_score": 0.392,
+      "quality_score": 0.265,
+      "momentum_score": 0.851
+    },
+    {
+      "ticker": "INTU",
+      "sector": "Technology",
+      "weight": 0.1,
+      "alpha_score": 0.501,
+      "value_score": 0.865,
+      "quality_score": 0.201,
+      "momentum_score": 0.436
+    },
+    {
+      "ticker": "UNP",
       "sector": "Industrials",
       "weight": 0.1,
-      "alpha_score": 0.382,
-      "value_score": 0.699,
-      "quality_score": -0.291,
-      "momentum_score": 0.737
+      "alpha_score": 0.419,
+      "value_score": 0.21,
+      "quality_score": 1.086,
+      "momentum_score": -0.041
     }
   ],
   "monthly_picks": {
@@ -254,86 +254,57 @@
         "MU",
         "DE"
       ]
+    },
+    "2026-11": {
+      "date": "2026-11-12",
+      "tickers": [
+        "NVDA",
+        "ACN",
+        "CEG",
+        "COF",
+        "HON",
+        "MU",
+        "V",
+        "MSFT",
+        "INTU",
+        "UNP"
+      ]
     }
   },
   "cluster_buys": [
     {
-      "ticker": "GME",
-      "company": "Gamestop Corp.",
-      "industry": "Computer & Computer Software Stores",
-      "insider_count": 4,
-      "trade_date": "2026-09-08",
-      "filing_date": "2026-10-02 16:57:33",
-      "price": 22.49,
-      "qty": 3383642,
-      "value": 76108143
-    },
-    {
-      "ticker": "BBD",
-      "company": "Bank Bradesco",
-      "industry": "State Commercial Banks",
-      "insider_count": 22,
-      "trade_date": "2026-09-28",
-      "filing_date": "2026-09-30 16:42:04",
-      "price": 17.97,
-      "qty": 1556227,
-      "value": 27962071
-    },
-    {
-      "ticker": "CYBN",
-      "company": "Cybin Inc.",
+      "ticker": "RAPP",
+      "company": "Rapport Therapeutics, Inc.",
       "industry": "Pharmaceutical Preparations",
       "insider_count": 3,
-      "trade_date": "2026-09-21",
-      "filing_date": "2026-09-21 17:07:57",
-      "price": 12.58,
-      "qty": 500000,
-      "value": 6289000
+      "trade_date": "2026-10-22",
+      "filing_date": "2026-10-30 19:32:45",
+      "price": 21.27,
+      "qty": 1014605,
+      "value": 21582249
     },
     {
-      "ticker": "SBLK",
-      "company": "Star Bulk Carriers Corp.",
-      "industry": "Deep Sea Foreign Transportation of Freight",
+      "ticker": "TTMI",
+      "company": "Ttm Technologies Inc",
+      "industry": "Printed Circuit Boards",
+      "insider_count": 3,
+      "trade_date": "2026-11-05",
+      "filing_date": "2026-11-09 10:52:23",
+      "price": 76.13,
+      "qty": 30000,
+      "value": 2283952
+    },
+    {
+      "ticker": "UPBD",
+      "company": "Upbound Group, Inc.",
+      "industry": "Equipment Rental & Leasing",
       "insider_count": 4,
-      "trade_date": "2026-09-15",
-      "filing_date": "2026-09-17 11:02:04",
-      "price": 28.27,
-      "qty": 159400,
-      "value": 4506238
-    },
-    {
-      "ticker": "COO",
-      "company": "Cooper Companies, Inc.",
-      "industry": "Ophthalmic Goods",
-      "insider_count": 3,
-      "trade_date": "2026-09-11",
-      "filing_date": "2026-09-17 16:22:47",
-      "price": 54.18,
-      "qty": 34701,
-      "value": 1880110
-    },
-    {
-      "ticker": "CELH",
-      "company": "Celsius Holdings, Inc.",
-      "industry": "Bottled & Canned Soft Drinks & Carbonated Waters",
-      "insider_count": 3,
-      "trade_date": "2026-09-15",
-      "filing_date": "2026-09-16 09:00:48",
-      "price": 27.73,
-      "qty": 66000,
-      "value": 1830043
-    },
-    {
-      "ticker": "DKS",
-      "company": "Dick'S Sporting Goods, Inc.",
-      "industry": "Miscellaneous Shopping Goods Stores",
-      "insider_count": 3,
-      "trade_date": "2026-09-30",
-      "filing_date": "2026-10-01 16:58:22",
-      "price": 131.86,
-      "qty": 13232,
-      "value": 1744758
+      "trade_date": "2026-11-05",
+      "filing_date": "2026-11-09 16:30:05",
+      "price": 23.09,
+      "qty": 58210,
+      "value": 1343995
     }
   ],
-  "cluster_buys_updated": "2026-10-05 12:35"
+  "cluster_buys_updated": "2026-11-13 14:20"
 }
